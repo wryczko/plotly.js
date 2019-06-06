@@ -47,7 +47,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var cd0 = cd[0];
         var trace = cd0.trace;
 
-        // FIXME: I think the ydomain below is reversed
         // Domain size
         var domain = trace.domain;
         var size = Lib.extendFlat({}, fullLayout._size, {
@@ -55,8 +54,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             h: fullLayout._size.h * (domain.y[1] - domain.y[0]),
             l: fullLayout._size.l + fullLayout._size.w * domain.x[0],
             r: fullLayout._size.r + fullLayout._size.w * (1 - domain.x[1]),
-            t: fullLayout._size.t + fullLayout._size.h * domain.y[0],
-            b: fullLayout._size.b + fullLayout._size.h * (1 - domain.y[1])
+            t: fullLayout._size.t + fullLayout._size.h * (1 - domain.y[1]),
+            b: fullLayout._size.b + fullLayout._size.h * (domain.y[0])
         });
 
         // title
