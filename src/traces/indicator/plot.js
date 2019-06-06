@@ -83,8 +83,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // circular gauge
         var isAngular = hasGauge && trace.gauge.shape === 'angular';
         var theta = Math.PI / 2;
-        var radius = Math.min(size.w / 2, size.h * 0.75);
-        var isWide = (size.h * 0.75 < size.w / 2);
+        var radius = Math.min(size.w / 2, size.h * 0.65);
+        var isWide = (size.w / 2 > size.h * 0.65);
         var innerRadius = cn.innerRadius * radius;
         function valueToAngle(v) {
             var angle = (v - trace.min) / (trace.max - trace.min) * Math.PI - Math.PI / 2;
@@ -130,8 +130,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
         } else {
             if(isAngular) {
-                bignumberY = size.t + size.h;
-                if(!isWide) bignumberY -= (size.h - radius) / 2;
+                bignumberY = size.t + size.h - (0.15 * size.h);
+                // if(!isWide) bignumberY -= (size.h - radius) / 2;
+                if(!isWide) bignumberY = size.t + size.h / 2;
                 bignumberFontSize = Math.min(2 * innerRadius / (fmt(trace.max).length));
                 deltaFontSize = 0.35 * bignumberFontSize;
                 gaugeFontSize = Math.max(0.25 * bignumberFontSize, (radius - innerRadius) / 4);
@@ -232,7 +233,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             data = cd.filter(function() {return isAngular;});
             var gauge = d3.select(this).selectAll('g.gauge').data(data);
             gauge.enter().append('g').classed('gauge', true);
-            gauge.attr('transform', 'translate(' + centerX + ',' + bignumberY + ')');
+            gauge.attr('transform', 'translate(' + centerX + ',' + (bignumberY) + ')');
 
             // Draw gauge's min and max in text
             var minText = gauge.selectAll('text.min').data(cd);

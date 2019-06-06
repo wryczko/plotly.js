@@ -2,7 +2,7 @@
   "data": [{
     "domain": {
       "x": [0, 0.474],
-      "y": [0, 1]
+      "y": [0.5, 1]
     },
     "values": [400, 450],
     "title": {"text": "Speed"},
@@ -33,7 +33,69 @@
   }, {
     "domain": {
       "x": [0.474, 0.789],
-      "y": [0, 0.666]
+      "y": [0.5, 0.83333]
+    },
+    "values": [400, 450],
+    "title": {"text": "Speed"},
+    "type": "indicator",
+    "mode": "gauge+delta",
+    "ticker": {
+      "showticker": true
+    },
+    "max": 500,
+    "gauge": {
+      "bgcolor": "rgba(255, 255, 255, 0.25)",
+      "borderwidth": 2,
+      "bordercolor": "rgba(255, 255, 255, 0.5)",
+      "steps": [{
+        "range": [0, 250],
+        "color": "rgba(255, 255, 0, 0.5)"
+      }, {
+        "range": [250, 400],
+        "color": "rgba(0, 0, 255, 0.75)"
+      }],
+      "threshold": {
+        "color": "rgba(255, 0, 0, 1)",
+        "width": 4,
+        "height": 0.75,
+        "value": 490
+      }
+    }
+  }, {
+    "domain": {
+      "x": [0, 0.789],
+      "y": [0, 0.5]
+    },
+    "values": [400, 240],
+    "title": {"text": "Speed"},
+    "type": "indicator",
+    "mode": "gauge+bignumber+delta",
+    "ticker": {
+      "showticker": true
+    },
+    "max": 500,
+    "gauge": {
+      "bgcolor": "rgba(255, 255, 255, 0.25)",
+      "borderwidth": 2,
+      "bordercolor": "rgba(255, 255, 255, 0.5)",
+      "steps": [{
+        "range": [0, 250],
+        "color": "rgba(255, 255, 0, 0.5)"
+      }, {
+        "range": [250, 400],
+        "color": "rgba(0, 0, 255, 0.5)"
+      }],
+      "threshold": {
+        "color": "rgba(255, 0, 0, 1)",
+        "width": 4,
+        "height": 0.75,
+        "value": 490
+      }
+    }
+  }, {
+    "domain": {
+      "x": [0.789, 1],
+      "y": [0.8333, 1]
     },
     "values": [400, 450],
     "title": {"text": "Speed"},
@@ -61,10 +123,10 @@
         "value": 490
       }
     }
-  }, {
+  },{
     "domain": {
       "x": [0.789, 1],
-      "y": [0, 0.333]
+      "y": [0, 0.8333]
     },
     "values": [400, 450],
     "title": {"text": "Speed"},
@@ -95,13 +157,13 @@
   }],
   "layout": {
     "width": 900,
-    "height": 300,
+    "height": 600,
     "paper_bgcolor": "black",
     "margin": {
       "t": 25,
       "r": 25,
       "l": 25,
-      "b": 50
+      "b": 25
     },
     "font": {
       "color": "white",
@@ -111,7 +173,7 @@
       "type": "rect",
       "x0": 0,
       "x1": 0.474,
-      "y0": 0,
+      "y0": 0.5,
       "y1": 1,
       "line": {
         "color": "rgba(255, 255, 255, 0.35)",
@@ -122,8 +184,19 @@
       "type": "rect",
       "x0": 0.474,
       "x1": 0.789,
-      "y0": 0,
-      "y1": 0.666,
+      "y0": 0.5,
+      "y1": 0.8333,
+      "line": {
+        "color": "rgba(255, 255, 255, 0.35)",
+        "width": 1
+      },
+      "fill": "rgba(0,0,0,0)"
+    },{
+      "type": "rect",
+      "x0": 0.789,
+      "x1": 1.0,
+      "y0": 0.83333,
+      "y1": 1.0,
       "line": {
         "color": "rgba(255, 255, 255, 0.35)",
         "width": 1
@@ -134,7 +207,18 @@
       "x0": 0.789,
       "x1": 1.0,
       "y0": 0,
-      "y1": 0.333,
+      "y1": 0.83333,
+      "line": {
+        "color": "rgba(255, 255, 255, 0.35)",
+        "width": 1
+      },
+      "fill": "rgba(0,0,0,0)"
+    },{
+      "type": "rect",
+      "x0": 0,
+      "x1": 0.789,
+      "y0": 0,
+      "y1": 0.5,
       "line": {
         "color": "rgba(255, 255, 255, 0.35)",
         "width": 1
