@@ -103,7 +103,41 @@
       "r": 25,
       "l": 25,
       "b": 10
-    }
+    },
+    "shapes": [{
+      "type": "rect",
+      "x0": 0,
+      "x1": 1,
+      "y0": 0,
+      "y1": 0.333,
+      "line": {
+        "color": "rgba(0, 0, 0, 0.25)",
+        "width": 1
+      },
+      "fill": "rgba(0,0,0,0)"
+    }, {
+      "type": "rect",
+      "x0": 0,
+      "x1": 1,
+      "y0": 0.333,
+      "y1": 0.666,
+      "line": {
+        "color": "rgba(0, 0, 0, 0.25)",
+        "width": 1
+      },
+      "fill": "rgba(0,0,0,0)"
+    }, {
+      "type": "rect",
+      "x0": 0,
+      "x1": 1,
+      "y0": 0.666,
+      "y1": 1.0,
+      "line": {
+        "color": "rgba(0, 0, 0, 0.25)",
+        "width": 1
+      },
+      "fill": "rgba(0,0,0,0)"
+    }]
   },
   "config": {
     "responsive": true
