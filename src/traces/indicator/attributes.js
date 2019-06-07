@@ -21,7 +21,6 @@ var cn = require('./constants.js');
 
 var textFontAttrs = fontAttrs({
     editType: 'plot',
-    arrayOk: true,
     colorEditType: 'plot'
 });
 delete(textFontAttrs.size); // TODO: relative size?
@@ -105,9 +104,10 @@ module.exports = {
         flags: ['bignumber', 'delta', 'gauge'],
         dflt: 'bignumber'
     },
-    values: {
-        valType: 'data_array',
+    value: {
+        valType: 'number',
         editType: 'calc',
+        role: 'info',
         description: [
             'Sets the number to be displayed.'
         ].join(' ')
@@ -123,6 +123,10 @@ module.exports = {
             'https://github.com/d3/d3-format/blob/master/README.md#locale_format'
         ].join(' ')
     },
+    // position
+    domain: domainAttrs({name: 'indicator', trace: true, editType: 'calc'}),
+
+    // TODO: min and max could be replaced by axis range
     min: {
         valType: 'number',
         editType: 'calc',
@@ -141,8 +145,6 @@ module.exports = {
         ].join(' ')
     },
 
-    // position
-    domain: domainAttrs({name: 'indicator', trace: true, editType: 'calc'}),
     title: {
         text: {
             valType: 'string',
@@ -163,7 +165,76 @@ module.exports = {
             description: [
                 'Set the font used to display main number'
             ].join(' ')
-        })
+        }),
+        align: {
+            valType: 'enumerated',
+            values: ['left', 'center', 'right'],
+            dflt: 'center',
+            role: 'style',
+            editType: 'style',
+            description: [
+                'Sets the horizontal alignment of the `text` within the box.'
+            ].join(' ')
+        },
+    },
+    delta: {
+        reference: {
+            valType: 'number',
+            editType: 'calc',
+            description: [
+                'Sets the reference value to compute the delta.'
+            ].join(' ')
+        },
+        showpercentage: {
+            valType: 'boolean',
+            editType: 'style',
+            role: 'style',
+            dflt: false,
+            description: [
+                'Show relative change in percentage'
+            ].join(' ')
+        },
+        valueformat: {
+            valType: 'string',
+            dflt: '.3s',
+            role: 'style',
+            editType: 'plot',
+            description: [
+                'Sets the value formatting rule using d3 formatting mini-language',
+                'which is similar to those of Python. See',
+                'https://github.com/d3/d3-format/blob/master/README.md#locale_format'
+            ].join(' ')
+        },
+        increasing: {
+            color: {
+                valType: 'color',
+                role: 'style',
+                dflt: cn.INCREASING_COLOR,
+                editType: 'style',
+                description: [
+                    'Sets the color for increasing value.'
+                ].join(' ')
+            },
+            editType: 'style'
+        },
+        decreasing: {
+            color: {
+                valType: 'color',
+                role: 'style',
+                dflt: cn.DECREASING_COLOR,
+                editType: 'style',
+                description: [
+                    'Sets the color for increasing value.'
+                ].join(' ')
+            },
+            editType: 'style'
+        },
+        font: extendFlat({}, textFontAttrs, {
+            description: [
+                'Set the font used to display the delta'
+            ].join(' ')
+        }),
+        editType: 'calc'
     },
     gauge: {
         shape: {
@@ -249,57 +320,5 @@ module.exports = {
         description: 'The gauge of the Indicator plot.',
         editType: 'plot'
         // TODO: in future version, add marker: (bar|needle)
-    },
-    delta: {
-        showpercentage: {
-            valType: 'boolean',
-            editType: 'style',
-            role: 'style',
-            dflt: false,
-            description: [
-                'Show relative change in percentage'
-            ].join(' ')
-        },
-        valueformat: {
-            valType: 'string',
-            dflt: '.3s',
-            role: 'style',
-            editType: 'plot',
-            description: [
-                'Sets the value formatting rule using d3 formatting mini-language',
-                'which is similar to those of Python. See',
-                'https://github.com/d3/d3-format/blob/master/README.md#locale_format'
-            ].join(' ')
-        },
-        increasing: {
-            color: {
-                valType: 'color',
-                role: 'style',
-                dflt: cn.INCREASING_COLOR,
-                editType: 'style',
-                description: [
-                    'Sets the color for increasing value.'
-                ].join(' ')
-            },
-            editType: 'style'
-        },
-        decreasing: {
-            color: {
-                valType: 'color',
-                role: 'style',
-                dflt: cn.DECREASING_COLOR,
-                editType: 'style',
-                description: [
-                    'Sets the color for increasing value.'
-                ].join(' ')
-            },
-            editType: 'style'
-        },
-        font: extendFlat({}, textFontAttrs, {
-            description: [
-                'Set the font used to display the delta'
-            ].join(' ')
-        }),
-        editType: 'calc'
     }
 };

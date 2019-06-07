@@ -11,13 +11,15 @@
 // var Lib = require('../../lib');
 
 function calc(gd, trace) {
-    var len = trace.values.length;
+    // var len = trace.values.length;
 
     var cd = [];
 
-    var singleValue = len === 1;
-    var lastReading = trace.values[len - 1];
-    var secondLastReading = singleValue ? lastReading : trace.values[len - 2];
+    // var singleValue = len === 1;
+    // var lastReading = trace.values[len - 1];
+    // var secondLastReading = singleValue ? lastReading : trace.values[len - 2];
+    var lastReading = trace.value;
+    var secondLastReading = trace.delta.reference;
     cd[0] = {
         y: lastReading,
         lastY: secondLastReading,
@@ -25,7 +27,7 @@ function calc(gd, trace) {
         delta: lastReading - secondLastReading,
         relativeDelta: (lastReading - secondLastReading) / secondLastReading,
 
-        historical: trace.values
+        // historical: trace.values
 
     };
     return cd;

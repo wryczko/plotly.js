@@ -23,16 +23,17 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     }
 
     coerce('mode');
-    coerce('values');
+    coerce('value');
     coerce('valueformat');
     coerce('min');
-    coerce('max', 1.5 * traceOut.values[traceOut.values.length - 1]);
+    coerce('max', 1.5 * traceOut.value);
 
     handleDomainDefaults(traceOut, layout, coerce);
 
     // Font attribtes
     coerce('number.font.color', layout.font.color);
     coerce('number.font.family', layout.font.family);
+    coerce('number.align');
 
     coerce('delta.font.color', traceOut.number.font.color);
     coerce('delta.font.family', traceOut.number.font.family);
@@ -66,26 +67,27 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     if(gaugeIn && gaugeIn.steps) {
         handleArrayContainerDefaults(gaugeIn, gaugeOut, {
             name: 'steps',
-            handleItemDefaults: targetDefaults
+            handleItemDefaults: stepDefaults
         });
     } else {
         gaugeOut.steps = [];
     }
 
-    // Gauge thresholds
+    // Gauge threshold
     coerceGauge('threshold.value');
     coerceGauge('threshold.size');
     coerceGauge('threshold.width');
     coerceGauge('threshold.color');
 
     // ticker attributes
+    coerce('delta.reference', traceOut.value);
     coerce('delta.showpercentage');
     coerce('delta.valueformat', traceOut.delta.showpercentage ? '2%' : traceOut.valueformat);
     coerce('delta.increasing.color');
     coerce('delta.decreasing.color');
 }
 
-function targetDefaults(valueIn, valueOut) {
+function stepDefaults(valueIn, valueOut) {
     function coerce(attr, dflt) {
         return Lib.coerce(valueIn, valueOut, attributes.gauge.steps, attr, dflt);
     }

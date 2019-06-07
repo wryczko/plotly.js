@@ -99,7 +99,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // TODO: Move the following to defaults
         // Position elements
         var bignumberX, bignumberY, bignumberFontSize, bignumberBaseline;
+        var bignumberAnchor = 'middle';
         var deltaX, deltaY, deltaFontSize, deltaBaseline;
+        var deltaAnchor = 'middle';
         var titleX, titleY, titleFontSize;
 
         var bulletHeight = Math.min(cn.bulletHeight, size.h / 2);
@@ -108,7 +110,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // Center everything
         var centerX = size.l + size.w / 2;
         bignumberX = centerX;
-        deltaX = bignumberX;
+        deltaX = centerX;
         titleX = centerX;
 
         bignumberBaseline = hasGauge && isAngular ? 'bottom' : 'central';
@@ -122,6 +124,18 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 deltaFontSize = 0.5 * bignumberFontSize;
                 bignumberY = size.t + size.h / 2;
                 deltaY = Math.min(size.t + size.h / 2 + bignumberFontSize / 2 + deltaFontSize / 2);
+                if(trace.number.align === 'left') {
+                    bignumberX = size.l;
+                    deltaX = bignumberX;
+                    bignumberAnchor = 'start';
+                    deltaAnchor = 'start';
+                }
+                if(trace.number.align === 'right') {
+                    bignumberX = size.l + size.w;
+                    deltaX = bignumberX;
+                    bignumberAnchor = 'end';
+                    deltaAnchor = 'end';
+                }
             } else {
                 deltaFontSize = bignumberFontSize;
                 deltaY = size.t + size.h / 2;
@@ -187,7 +201,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             number.attr({
                 x: bignumberX,
                 y: bignumberY,
-                'text-anchor': 'middle',
+                'text-anchor': bignumberAnchor,
                 'alignment-baseline': bignumberBaseline
             })
             .call(Drawing.font, trace.number.font)
@@ -220,7 +234,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             delta.attr({
                 x: deltaX,
                 y: deltaY,
-                'text-anchor': 'middle',
+                'text-anchor': deltaAnchor,
                 'alignment-baseline': deltaBaseline || 'central'
             })
             .call(Drawing.font, trace.delta.font)
@@ -343,8 +357,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(hasTitle) bulletWidth -= 0.25;
             var scale = d3.scale.linear().domain([trace.min, trace.max]).range([0, bulletWidth * size.w]);
 
-            // TODO: prevent rect width from being negative
-            // TODO: prevent rect position from overflowing
+            // TODO: prevent rect width from being negative or overflowing
             var targetBullet = bullet.selectAll('g.targetBullet').data([bg].concat(trace.gauge.steps));
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
             targetBullet.select('rect')

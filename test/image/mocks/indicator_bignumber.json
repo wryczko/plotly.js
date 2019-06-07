@@ -8,10 +8,11 @@
       "type": "indicator",
       "mode": "bignumber+delta",
       "delta": {
+        "reference": 400,
         "showpercentage": true
       },
       "max": 500,
-      "values": [400, 450]
+      "value": 450
     }, {
         "domain": {
           "x": [0, 0.33],
@@ -21,10 +22,11 @@
         "type": "indicator",
         "mode": "delta",
         "delta": {
+          "reference": 400,
           "showpercentage": true
         },
         "max": 500,
-        "values": [400, 350]
+        "value": 350
     }, {
         "domain": {
           "x": [0, 0.33],
@@ -34,10 +36,11 @@
         "type": "indicator",
         "mode": "bignumber",
         "delta": {
+          "reference": 400,
           "showpercentage": true
         },
         "max": 500,
-        "values": [400, 430]
+        "value": 430
     }, {
       "domain": {
         "x": [0.33, 0.66],
@@ -47,10 +50,11 @@
       "type": "indicator",
       "mode": "bignumber+delta",
       "delta": {
+        "reference": 400,
         "showpercentage": true
       },
       "max": 500,
-      "values": [400, 450]
+      "value": 450
     }, {
       "domain": {
         "x": [0.33, 0.66],
@@ -60,13 +64,14 @@
       "type": "indicator",
       "mode": "bignumber+delta",
       "delta": {
+        "reference": 400,
         "showpercentage": true
       },
       "gauge": {
         "bgcolor": "rgba(255, 255, 255, 0.25)"
       },
       "max": 500,
-      "values": [400, 350]
+      "value": 350
     }, {
       "domain": {
         "x": [0.66, 1],
@@ -76,10 +81,11 @@
       "type": "indicator",
       "mode": "bignumber+delta",
       "delta": {
+        "reference": 400,
         "showpercentage": true
       },
       "max": 500,
-      "values": [400, 450]
+      "value": 450
     }
   ],
   "layout": {
