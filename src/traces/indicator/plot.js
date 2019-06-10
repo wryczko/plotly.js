@@ -426,11 +426,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 labelFns: Axes.makeLabelFns(ax, shift)
             });
 
-            // TODO: prevent rect width from being negative or overflowing
             var targetBullet = bullet.selectAll('g.targetBullet').data([bg].concat(trace.gauge.steps));
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
             targetBullet.select('rect')
-                  .attr('width', function(d) { return ax.c2p(d.range[1] - d.range[0]);})
+                  .attr('width', function(d) { return Math.max(0, ax.c2p(d.range[1] - d.range[0]));})
                   .attr('x', function(d) { return ax.c2p(d.range[0]);})
                   .attr('height', bulletHeight)
                   .style('fill', function(d) { return d.color;})
@@ -454,10 +453,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                   .ease(transitionOpts.easing)
                   .each('end', function() { onComplete && onComplete(); })
                   .each('interrupt', function() { onComplete && onComplete(); })
-                  .attr('width', ax.c2p(Math.min(trace.max, cd[0].y)));
+                  .attr('width', Math.max(0, ax.c2p(Math.min(trace.max, cd[0].y))));
             } else {
                 fgBullet.select('rect')
-                  .attr('width', ax.c2p(Math.min(trace.max, cd[0].y)));
+                  .attr('width', Math.max(0, ax.c2p(Math.min(trace.max, cd[0].y))));
             }
             fgBullet.exit().remove();
 
