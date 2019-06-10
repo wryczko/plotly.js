@@ -11,6 +11,8 @@
 var d3 = require('d3');
 
 var Lib = require('../../lib');
+var rad2deg = Lib.rad2deg;
+var MID_SHIFT = require('../../constants/alignment').MID_SHIFT;
 var Drawing = require('../../components/drawing');
 var cn = require('./constants');
 var svgTextUtils = require('../../lib/svg_text_utils');
@@ -19,6 +21,7 @@ var Axes = require('../../plots/cartesian/axes');
 var handleAxisDefaults = require('../../plots/cartesian/axis_defaults');
 var handleAxisPositionDefaults = require('../../plots/cartesian/position_defaults');
 var axisLayoutAttrs = require('../../plots/cartesian/layout_attributes');
+var setConvertPolar = require('../../plots/polar/set_convert');
 //
 // // arc cotangent
 // function arcctg(x) { return Math.PI / 2 - Math.atan(x); }
@@ -276,7 +279,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             data = cd.filter(function() {return isAngular;});
             var gauge = d3.select(this).selectAll('g.gauge').data(data);
             gauge.enter().append('g').classed('gauge', true);
-            gauge.attr('transform', 'translate(' + centerX + ',' + (bignumberY) + ')');
+            gauge.attr('transform', strTranslate(centerX, bignumberY));
 
             // Draw gauge's min and max in text
             var minText = gauge.selectAll('text.min').data(cd);
@@ -308,6 +311,97 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                       .innerRadius((innerRadius + radius) / 2 - size / 2 * (radius - innerRadius))
                       .outerRadius((innerRadius + radius) / 2 + size / 2 * (radius - innerRadius))
                       .startAngle(-theta);
+            }
+
+            // Draw angular axis
+            var opts = {
+                autorange: false
+            }; // TODO: use attribute gauge.axis
+            var ax = mockAxis(gd, opts);
+            ax.type = 'indicator';
+            ax.range = [trace.min, trace.max];
+            ax.direction = 'clockwise';
+            ax.rotation = 180;
+            ax._id = 'angularaxis';
+            setConvertPolar(ax, {sector: [0, 180]}, fullLayout);
+            ax.setGeometry();
+            ax.setScale();
+
+            // 't'ick to 'g'eometric radians is used all over the place here
+            var t2g = function(d) { return ax.t2g(d.x); };
+
+            var labelFns = {};
+            var out = Axes.makeLabelFns(ax, 0);
+            var labelStandoff = out.labelStandoff;
+
+            labelFns.xFn = function(d) {
+                var rad = t2g(d);
+                return Math.cos(rad) * labelStandoff;
+            };
+
+            labelFns.yFn = function(d) {
+                var rad = t2g(d);
+                var ff = Math.sin(rad) > 0 ? 0.2 : 1;
+                return -Math.sin(rad) * (labelStandoff + d.fontSize * ff) +
+                    Math.abs(Math.cos(rad)) * (d.fontSize * MID_SHIFT);
+            };
+
+            labelFns.anchorFn = function(d) {
+                var rad = t2g(d);
+                var cos = Math.cos(rad);
+                return Math.abs(cos) < 0.1 ?
+                    'middle' :
+                    (cos > 0 ? 'start' : 'end');
+            };
+
+            labelFns.heightFn = function(d, a, h) {
+                var rad = t2g(d);
+                return -0.5 * (1 + Math.sin(rad)) * h;
+            };
+
+
+            var axLayer = d3.select(this).selectAll('g.gaugeaxis').data(data);
+            axLayer.enter().append('g')
+              .classed('gaugeaxis', true)
+              .classed('crisp', true);
+            axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
+
+            var shift = bulletHeight;
+
+            var vals = Axes.calcTicks(ax);
+
+            var _transFn = function(rad) {
+                return strTranslate(centerX + radius * Math.cos(rad), bignumberY - radius * Math.sin(rad));
+            };
+
+            var transFn = function(d) {
+                return _transFn(t2g(d));
+            };
+
+            var transFn2 = function(d) {
+                var rad = t2g(d);
+                return _transFn(rad) + strRotate(-rad2deg(rad));
+            };
+
+            if(ax.visible) {
+                var tickSign = ax.ticks === 'inside' ? -1 : 1;
+                var pad = (ax.linewidth || 1) / 2;
+
+                Axes.drawTicks(gd, ax, {
+                    vals: vals,
+                    layer: axLayer,
+                    // path: Axes.makeTickPath(ax, shift, tickSign),
+                    path: 'M' + (tickSign * pad) + ',0h' + (tickSign * ax.ticklen),
+                    transFn: transFn2,
+                    crips: true
+                });
+
+                Axes.drawLabels(gd, ax, {
+                    vals: vals,
+                    layer: axLayer,
+                    transFn: transFn,
+                    labelFns: labelFns
+                });
             }
 
             // Reexpress our background attributes for drawing
@@ -384,13 +478,13 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             bullet.enter().append('g').classed('bullet', true);
             bullet.attr('transform', 'translate(' + (size.l + (bulletLeft * size.w)) + ',' + bulletVerticalMargin + ')');
 
-            // Draw axis
+            // Draw cartesian axis
             // force full redraw of labels and ticks
-            var opts = {
+            opts = {
                 ticks: 'outside'
             }; // TODO: use attribute gauge.axis
             var range = [trace.min, trace.max];
-            var ax = mockAxis(gd, opts, range);
+            ax = mockAxis(gd, opts, range);
             ax.position = 0;
             ax.domain = [
                 bulletLeft,
@@ -400,32 +494,36 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             // var g = d3.select(this);
             // var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
-            var axLayer = d3.select(this).selectAll('g.gaugeaxis').data(data);
+            axLayer = d3.select(this).selectAll('g.gaugeaxis').data(data);
             axLayer.enter().append('g')
               .classed('gaugeaxis', true)
               .classed('crisp', true);
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
 
-            var shift = bulletHeight + bulletVerticalMargin;
+            shift = bulletHeight + bulletVerticalMargin;
 
-            var vals = Axes.calcTicks(ax);
-            var transFn = Axes.makeTransFn(ax);
-            var tickSign = Axes.getTickSigns(ax)[2];
+            vals = Axes.calcTicks(ax);
+            transFn = Axes.makeTransFn(ax);
+            tickSign = Axes.getTickSigns(ax)[2];
 
-            Axes.drawTicks(gd, ax, {
-                vals: ax.ticks === 'inside' ? Axes.clipEnds(ax, vals) : vals,
-                layer: axLayer,
-                path: Axes.makeTickPath(ax, shift, tickSign),
-                transFn: transFn
-            });
+            if(ax.visible) {
+                Axes.drawTicks(gd, ax, {
+                    vals: ax.ticks === 'inside' ? Axes.clipEnds(ax, vals) : vals,
+                    layer: axLayer,
+                    path: Axes.makeTickPath(ax, shift, tickSign),
+                    transFn: transFn
+                });
 
-            Axes.drawLabels(gd, ax, {
-                vals: vals,
-                layer: axLayer,
-                transFn: transFn,
-                labelFns: Axes.makeLabelFns(ax, shift)
-            });
+                Axes.drawLabels(gd, ax, {
+                    vals: vals,
+                    layer: axLayer,
+                    transFn: transFn,
+                    labelFns: Axes.makeLabelFns(ax, shift)
+                });
+            }
 
+
+            // Draw bullet background and steps
             var targetBullet = bullet.selectAll('g.targetBullet').data([bg].concat(trace.gauge.steps));
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
             targetBullet.select('rect')
@@ -502,7 +600,7 @@ function mockAxis(gd, opts, zrange) {
         ticks: 'outside',
         ticklen: opts.ticklen,
         tickwidth: opts.tickwidth,
-        tickcolor: opts.tickcolor,
+        tickcolor: opts.tickcolor || fullLayout.font.color,
         showticklabels: opts.showticklabels,
         tickfont: opts.tickfont,
         tickangle: opts.tickangle,
@@ -542,6 +640,15 @@ function mockAxis(gd, opts, zrange) {
     handleAxisPositionDefaults(cbAxisIn, cbAxisOut, coerce, axisOptions);
 
     return cbAxisOut;
+}
+
+function strTranslate(x, y) {
+    return 'translate(' + x + ',' + y + ')';
+}
+
+
+function strRotate(angle) {
+    return 'rotate(' + angle + ')';
 }
 
 // Draw bullet
