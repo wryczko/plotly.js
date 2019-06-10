@@ -1,0 +1,19 @@
+{
+  "data": [{
+    "type": "indicator",
+    "mode": "bignumber+delta",
+    "valueformat": "asdf",
+    "number": {
+      "align": "left"
+    },
+    "value": 43,
+    "delta": {
+      "reference": 20
+    }
+  }],
+  "layout": {
+    "width": 200,
+    "height": 100,
+    "margin": {"t": 0, "b": 0, "l": 25, "r": 25}
+  }
+}
