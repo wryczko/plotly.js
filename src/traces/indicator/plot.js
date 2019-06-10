@@ -15,7 +15,10 @@ var Drawing = require('../../components/drawing');
 var cn = require('./constants');
 var svgTextUtils = require('../../lib/svg_text_utils');
 // var Plots = require('../../plots/plots');
-// var Axes = require('../../plots/cartesian/axes');
+var Axes = require('../../plots/cartesian/axes');
+var handleAxisDefaults = require('../../plots/cartesian/axis_defaults');
+var handleAxisPositionDefaults = require('../../plots/cartesian/position_defaults');
+var axisLayoutAttrs = require('../../plots/cartesian/layout_attributes');
 //
 // // arc cotangent
 // function arcctg(x) { return Math.PI / 2 - Math.atan(x); }
@@ -216,9 +219,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                     .each('interrupt', function() { onComplete && onComplete(); })
                     .attrTween('text', function() {
                         var that = d3.select(this);
-                        var i = d3.interpolateNumber(cd[0].lastY, cd[0].y);
+                        var interpolator = d3.interpolateNumber(cd[0].lastY, cd[0].y);
                         return function(t) {
-                            that.text(fmt(i(t)));
+                            that.text(fmt(interpolator(t)));
                         };
                     });
             } else {
@@ -357,6 +360,46 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(hasTitle) bulletWidth -= 0.25;
             var scale = d3.scale.linear().domain([trace.min, trace.max]).range([0, bulletWidth * size.w]);
 
+            // Draw axis
+            // force full redraw of labels and ticks
+            var opts = {
+                ticks: 'outside'
+            }; // TODO: attribute gauge.axis
+            var range = [trace.min, trace.max];
+            var ax = mockAxis(gd, opts, range);
+            ax.position = 0;
+            ax.domain = [
+                0.25,
+                0.75
+            ];
+            ax.setScale();
+
+            var g = d3.select(this);
+            var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
+            axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
+
+            // var shift = xLeft + thickPx +
+            //     (opts.outlinewidth || 0) / 2 - (opts.ticks === 'outside' ? 1 : 0);
+            var shift = size.t + bulletHeight;
+
+            var vals = Axes.calcTicks(ax);
+            var transFn = Axes.makeTransFn(ax);
+            var tickSign = Axes.getTickSigns(ax)[2];
+
+            Axes.drawTicks(gd, ax, {
+                vals: ax.ticks === 'inside' ? Axes.clipEnds(ax, vals) : vals,
+                layer: axLayer,
+                path: Axes.makeTickPath(ax, shift, tickSign),
+                transFn: transFn
+            });
+
+            Axes.drawLabels(gd, ax, {
+                vals: vals,
+                layer: axLayer,
+                transFn: transFn,
+                labelFns: Axes.makeLabelFns(ax, shift)
+            });
+
             // TODO: prevent rect width from being negative or overflowing
             var targetBullet = bullet.selectAll('g.targetBullet').data([bg].concat(trace.gauge.steps));
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
@@ -406,34 +449,34 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             // Draw x axis and ticks
             // TODO: reuse axis logic, draw axis for angular gauge
-            var xaxis = bullet.selectAll('g.xaxislayer-above').data(cd);
-            xaxis.enter().append('g').classed('xaxislayer-above', true);
-            var ticksPos = [trace.min, trace.max];
-            ticksPos = ticksPos.concat(trace.gauge.steps.map(function(d) { return d.range[1];}));
-            var ticks = xaxis.selectAll('g.tick').data(ticksPos);
-            var group = ticks.enter().append('g').classed('tick', true);
-
-            group.append('path');
-            ticks.select('path')
-                .attr('d', 'M0,0V' + 0.1 * bulletHeight)
-                .style('stroke', trace.number.font.color);
-
-            group.insert('text');
-            ticks.select('text')
-                .text(function(d) { return fmt(d);})
-                .call(Drawing.font, trace.number.font)
-                .style('font-size', titleFontSize)
-                .attr({
-                    y: 0.2 * bulletHeight,
-                    'text-anchor': 'middle',
-                    'alignment-baseline': 'hanging'
-                });
-            ticks
-              .attr('transform', function(d) {
-                  var pos = scale(d);
-                  return 'translate(' + pos + ',' + bulletHeight + ')';
-              });
-            ticks.exit().remove();
+            // var xaxis = bullet.selectAll('g.xaxislayer-above').data(cd);
+            // xaxis.enter().append('g').classed('xaxislayer-above', true);
+            // var ticksPos = [trace.min, trace.max];
+            // ticksPos = ticksPos.concat(trace.gauge.steps.map(function(d) { return d.range[1];}));
+            // var ticks = xaxis.selectAll('g.tick').data(ticksPos);
+            // var group = ticks.enter().append('g').classed('tick', true);
+            //
+            // group.append('path');
+            // ticks.select('path')
+            //     .attr('d', 'M0,0V' + 0.1 * bulletHeight)
+            //     .style('stroke', trace.number.font.color);
+            //
+            // group.insert('text');
+            // ticks.select('text')
+            //     .text(function(d) { return fmt(d);})
+            //     .call(Drawing.font, trace.number.font)
+            //     .style('font-size', titleFontSize)
+            //     .attr({
+            //         y: 0.2 * bulletHeight,
+            //         'text-anchor': 'middle',
+            //         'alignment-baseline': 'hanging'
+            //     });
+            // ticks
+            //   .attr('transform', function(d) {
+            //       var pos = scale(d);
+            //       return 'translate(' + pos + ',' + bulletHeight + ')';
+            //   });
+            // ticks.exit().remove();
         });
     });
 };
@@ -447,6 +490,64 @@ function arcTween(arc, endAngle, newAngle) {
             return arc.endAngle(interpolate(t))();
         };
     };
+}
+
+// mocks our axis
+function mockAxis(gd, opts, zrange) {
+    var fullLayout = gd._fullLayout;
+
+    var cbAxisIn = {
+        type: 'linear',
+        range: zrange,
+        tickmode: opts.tickmode,
+        nticks: opts.nticks,
+        tick0: opts.tick0,
+        dtick: opts.dtick,
+        tickvals: opts.tickvals,
+        ticktext: opts.ticktext,
+        ticks: 'outside',
+        ticklen: opts.ticklen,
+        tickwidth: opts.tickwidth,
+        tickcolor: opts.tickcolor,
+        showticklabels: opts.showticklabels,
+        tickfont: opts.tickfont,
+        tickangle: opts.tickangle,
+        tickformat: opts.tickformat,
+        exponentformat: opts.exponentformat,
+        separatethousands: opts.separatethousands,
+        showexponent: opts.showexponent,
+        showtickprefix: opts.showtickprefix,
+        tickprefix: opts.tickprefix,
+        showticksuffix: opts.showticksuffix,
+        ticksuffix: opts.ticksuffix,
+        title: opts.title,
+        showline: true,
+        anchor: 'free',
+        side: 'right',
+        position: 1
+    };
+
+    var cbAxisOut = {
+        type: 'linear',
+        _id: 'x' + opts._id
+    };
+
+    var axisOptions = {
+        letter: 'x',
+        font: fullLayout.font,
+        noHover: true,
+        noTickson: true,
+        calendar: fullLayout.calendar  // not really necessary (yet?)
+    };
+
+    function coerce(attr, dflt) {
+        return Lib.coerce(cbAxisIn, cbAxisOut, axisLayoutAttrs, attr, dflt);
+    }
+
+    handleAxisDefaults(cbAxisIn, cbAxisOut, coerce, axisOptions, fullLayout);
+    handleAxisPositionDefaults(cbAxisIn, cbAxisOut, coerce, axisOptions);
+
+    return cbAxisOut;
 }
 
 // Draw bullet

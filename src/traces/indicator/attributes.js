@@ -16,6 +16,7 @@ var extendDeep = require('../../lib/extend').extendDeep;
 var fontAttrs = require('../../plots/font_attributes');
 var colorAttrs = require('../../components/color/attributes');
 var domainAttrs = require('../../plots/domain').attributes;
+var axisAttrs = require('../../plots/cartesian/layout_attributes');
 var templatedArray = require('../../plot_api/plot_template').templatedArray;
 var cn = require('./constants.js');
 
