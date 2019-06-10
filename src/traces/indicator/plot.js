@@ -348,39 +348,39 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             threshold.exit().remove();
 
             // Draw bullet
+            var bulletLeft = hasTitle ? 0.25 : 0;
+            var bulletRight = (hasBigNumber || hasDelta) ? 0.75 : 1.0;
+
             data = cd.filter(function() {return isBullet;});
             var innerBulletHeight = trace.gauge.value.size * bulletHeight;
             var bulletVerticalMargin = bignumberY - bulletHeight / 2;
             var bullet = d3.select(this).selectAll('g.bullet').data(data);
             bullet.enter().append('g').classed('bullet', true);
-            bullet.attr('transform', 'translate(' + (size.l + (hasTitle ? 0.25 : 0) * size.w) + ',' + bulletVerticalMargin + ')');
-
-            var bulletWidth = 1;
-            if(hasBigNumber || hasDelta) bulletWidth -= 0.25;
-            if(hasTitle) bulletWidth -= 0.25;
-            var scale = d3.scale.linear().domain([trace.min, trace.max]).range([0, bulletWidth * size.w]);
+            bullet.attr('transform', 'translate(' + (size.l + (bulletLeft * size.w)) + ',' + bulletVerticalMargin + ')');
 
             // Draw axis
             // force full redraw of labels and ticks
             var opts = {
                 ticks: 'outside'
-            }; // TODO: attribute gauge.axis
+            }; // TODO: use attribute gauge.axis
             var range = [trace.min, trace.max];
             var ax = mockAxis(gd, opts, range);
             ax.position = 0;
             ax.domain = [
-                0.25,
-                0.75
+                bulletLeft,
+                bulletRight
             ];
             ax.setScale();
 
-            var g = d3.select(this);
-            var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
+            // var g = d3.select(this);
+            // var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
+            var axLayer = d3.select(this).selectAll('g.gaugeaxis').data(data);
+            axLayer.enter().append('g')
+              .classed('gaugeaxis', true)
+              .classed('crisp', true);
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
 
-            // var shift = xLeft + thickPx +
-            //     (opts.outlinewidth || 0) / 2 - (opts.ticks === 'outside' ? 1 : 0);
-            var shift = size.t + bulletHeight;
+            var shift = bulletHeight + bulletVerticalMargin;
 
             var vals = Axes.calcTicks(ax);
             var transFn = Axes.makeTransFn(ax);
@@ -404,8 +404,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var targetBullet = bullet.selectAll('g.targetBullet').data([bg].concat(trace.gauge.steps));
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
             targetBullet.select('rect')
-                  .attr('width', function(d) { return scale(d.range[1] - d.range[0]);})
-                  .attr('x', function(d) { return scale(d.range[0]);})
+                  .attr('width', function(d) { return ax.c2p(d.range[1] - d.range[0]);})
+                  .attr('x', function(d) { return ax.c2p(d.range[0]);})
                   .attr('height', bulletHeight)
                   .style('fill', function(d) { return d.color;})
                   .style('stroke', function(d) { return d.line.color;})
@@ -428,10 +428,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                   .ease(transitionOpts.easing)
                   .each('end', function() { onComplete && onComplete(); })
                   .each('interrupt', function() { onComplete && onComplete(); })
-                  .attr('width', scale(Math.min(trace.max, cd[0].y)));
+                  .attr('width', ax.c2p(Math.min(trace.max, cd[0].y)));
             } else {
                 fgBullet.select('rect')
-                  .attr('width', scale(Math.min(trace.max, cd[0].y)));
+                  .attr('width', ax.c2p(Math.min(trace.max, cd[0].y)));
             }
             fgBullet.exit().remove();
 
@@ -439,44 +439,13 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             threshold = bullet.selectAll('g.threshold').data(data);
             threshold.enter().append('g').classed('threshold', true).append('line');
             threshold.select('line')
-                .attr('x1', scale(trace.gauge.threshold.value))
-                .attr('x2', scale(trace.gauge.threshold.value))
+                .attr('x1', ax.c2p(trace.gauge.threshold.value))
+                .attr('x2', ax.c2p(trace.gauge.threshold.value))
                 .attr('y1', (1 - trace.gauge.threshold.size) / 2 * bulletHeight)
                 .attr('y2', (1 - (1 - trace.gauge.threshold.size) / 2) * bulletHeight)
                 .style('stroke', trace.gauge.threshold.color)
                 .style('stroke-width', trace.gauge.threshold.width);
             threshold.exit().remove();
-
-            // Draw x axis and ticks
-            // TODO: reuse axis logic, draw axis for angular gauge
-            // var xaxis = bullet.selectAll('g.xaxislayer-above').data(cd);
-            // xaxis.enter().append('g').classed('xaxislayer-above', true);
-            // var ticksPos = [trace.min, trace.max];
-            // ticksPos = ticksPos.concat(trace.gauge.steps.map(function(d) { return d.range[1];}));
-            // var ticks = xaxis.selectAll('g.tick').data(ticksPos);
-            // var group = ticks.enter().append('g').classed('tick', true);
-            //
-            // group.append('path');
-            // ticks.select('path')
-            //     .attr('d', 'M0,0V' + 0.1 * bulletHeight)
-            //     .style('stroke', trace.number.font.color);
-            //
-            // group.insert('text');
-            // ticks.select('text')
-            //     .text(function(d) { return fmt(d);})
-            //     .call(Drawing.font, trace.number.font)
-            //     .style('font-size', titleFontSize)
-            //     .attr({
-            //         y: 0.2 * bulletHeight,
-            //         'text-anchor': 'middle',
-            //         'alignment-baseline': 'hanging'
-            //     });
-            // ticks
-            //   .attr('transform', function(d) {
-            //       var pos = scale(d);
-            //       return 'translate(' + pos + ',' + bulletHeight + ')';
-            //   });
-            // ticks.exit().remove();
         });
     });
 };
