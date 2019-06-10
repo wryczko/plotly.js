@@ -73,10 +73,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // delta
         var hasDelta = trace.mode.indexOf('delta') !== -1;
         var deltaFmt = d3.format(trace.delta.valueformat);
-        var deltaText = function(d) {
-            if(d.delta === 0) return '-';
-            var value = trace.delta.showpercentage ? deltaFmt(d.relativeDelta) : deltaFmt(d.delta);
-            return (d.delta > 0 ? trace.delta.increasing.symbol : trace.delta.decreasing.symbol) + value;
+        if(!trace._deltaLastValue) trace._deltaLastValue = 0;
+        var deltaValue = function(d) {
+            var value = trace.delta.showpercentage ? d.relativeDelta : d.delta;
+            return value;
+        };
+        var deltaFormatText = function(value) {
+            if(value === 0) return '-';
+            return (value > 0 ? trace.delta.increasing.symbol : trace.delta.decreasing.symbol) + deltaFmt(value);
         };
         var deltaFill = function(d) {
             return d.delta >= 0 ? trace.delta.increasing.color : trace.delta.decreasing.color;
@@ -232,7 +236,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             number.exit().remove();
 
             // delta
-            // TODO: text animation for delta
             data = cd.filter(function() {return hasDelta;});
             var delta = d3.select(this).selectAll('text.delta').data(data);
             delta.enter().append('text').classed('delta', true);
@@ -244,8 +247,29 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             })
             .call(Drawing.font, trace.delta.font)
             .style('font-size', deltaFontSize)
-            .style('fill', deltaFill)
-            .text(deltaText);
+            .style('fill', deltaFill);
+
+            if(hasTransition) {
+                delta
+                    .transition()
+                    .duration(transitionOpts.duration)
+                    .ease(transitionOpts.easing)
+                    .each('end', function(d) { trace._deltaLastValue = deltaValue(d); onComplete && onComplete(); })
+                    .each('interrupt', function() { onComplete && onComplete(); })
+                    .attrTween('text', function(d) {
+                        var that = d3.select(this);
+                        var to = deltaValue(d);
+                        var from = trace._deltaLastValue;
+                        var interpolator = d3.interpolateNumber(from, to);
+                        return function(t) {
+                            that.text(deltaFormatText(interpolator(t)));
+                        };
+                    });
+            } else {
+                delta.text(function(d) {
+                    return deltaFormatText(deltaValue(d));
+                });
+            }
             delta.exit().remove();
 
             // Draw circular gauge
