@@ -74,7 +74,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var deltaText = function(d) {
             if(d.delta === 0) return '-';
             var value = trace.delta.showpercentage ? deltaFmt(d.relativeDelta) : deltaFmt(d.delta);
-            return (d.delta > 0 ? cn.DIRSYMBOL.increasing : cn.DIRSYMBOL.decreasing) + value;
+            return (d.delta > 0 ? trace.delta.increasing.symbol : trace.delta.decreasing.symbol) + value;
         };
         var deltaFill = function(d) {
             return d.delta >= 0 ? trace.delta.increasing.color : trace.delta.decreasing.color;

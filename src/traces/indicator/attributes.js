@@ -16,7 +16,7 @@ var extendDeep = require('../../lib/extend').extendDeep;
 var fontAttrs = require('../../plots/font_attributes');
 var colorAttrs = require('../../components/color/attributes');
 var domainAttrs = require('../../plots/domain').attributes;
-var axisAttrs = require('../../plots/cartesian/layout_attributes');
+// var axisAttrs = require('../../plots/cartesian/layout_attributes');
 var templatedArray = require('../../plot_api/plot_template').templatedArray;
 var cn = require('./constants.js');
 
@@ -207,6 +207,15 @@ module.exports = {
             ].join(' ')
         },
         increasing: {
+            symbol: {
+                valType: 'string',
+                role: 'style',
+                dflt: cn.DIRSYMBOL.increasing,
+                editType: 'style',
+                description: [
+                    'Sets the symbol to display for increasing value'
+                ].join(' ')
+            },
             color: {
                 valType: 'color',
                 role: 'style',
@@ -219,6 +228,15 @@ module.exports = {
             editType: 'style'
         },
         decreasing: {
+            symbol: {
+                valType: 'string',
+                role: 'style',
+                dflt: cn.DIRSYMBOL.decreasing,
+                editType: 'style',
+                description: [
+                    'Sets the symbol to display for increasing value'
+                ].join(' ')
+            },
             color: {
                 valType: 'color',
                 role: 'style',

@@ -8,6 +8,10 @@
       "type": "indicator",
       "mode": "bignumber+delta",
       "delta": {
+        "increasing": {
+          "color": "green",
+          "symbol": "+"
+        },
         "reference": 400,
         "showpercentage": true
       },

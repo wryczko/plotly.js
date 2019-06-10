@@ -11,7 +11,6 @@
 module.exports = {
     INCREASING_COLOR: '#3D9970',
     DECREASING_COLOR: '#FF4136',
-    // TODO: make the following constants overridable via attributes
     DIRSYMBOL: {
         increasing: '▲',
         decreasing: '▼'

@@ -79,11 +79,13 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     coerceGauge('threshold.width');
     coerceGauge('threshold.color');
 
-    // ticker attributes
+    // delta attributes
     coerce('delta.reference', traceOut.value);
     coerce('delta.showpercentage');
     coerce('delta.valueformat', traceOut.delta.showpercentage ? '2%' : traceOut.valueformat);
+    coerce('delta.increasing.symbol');
     coerce('delta.increasing.color');
+    coerce('delta.decreasing.symbol');
     coerce('delta.decreasing.color');
 }
 
