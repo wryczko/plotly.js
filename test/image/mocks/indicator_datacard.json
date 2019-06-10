@@ -4,7 +4,8 @@
     "mode": "bignumber+delta",
     "valueformat": "asdf",
     "number": {
-      "align": "left"
+      "align": "left",
+      "suffix": "km/h"
     },
     "value": 43,
     "delta": {

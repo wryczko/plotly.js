@@ -30,14 +30,13 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
 
     handleDomainDefaults(traceOut, layout, coerce);
 
-    // Font attribtes
+    // Number attributes
     coerce('number.font.color', layout.font.color);
     coerce('number.font.family', layout.font.family);
     coerce('number.align');
+    coerce('number.suffix');
 
-    coerce('delta.font.color', traceOut.number.font.color);
-    coerce('delta.font.family', traceOut.number.font.family);
-
+    // Title attributes
     coerce('title.font.color', traceOut.number.font.color);
     coerce('title.font.family', traceOut.number.font.family);
     coerce('title.text');
@@ -80,6 +79,8 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     coerceGauge('threshold.color');
 
     // delta attributes
+    coerce('delta.font.color', traceOut.number.font.color);
+    coerce('delta.font.family', traceOut.number.font.family);
     coerce('delta.reference', traceOut.value);
     coerce('delta.showpercentage');
     coerce('delta.valueformat', traceOut.delta.showpercentage ? '2%' : traceOut.valueformat);

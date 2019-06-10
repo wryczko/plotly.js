@@ -67,6 +67,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // bignumber
         var hasBigNumber = trace.mode.indexOf('bignumber') !== -1;
         var fmt = d3.format(trace.valueformat);
+        var bignumberSuffix = trace.number.suffix;
+        if(bignumberSuffix) bignumberSuffix = ' ' + bignumberSuffix;
 
         // delta
         var hasDelta = trace.mode.indexOf('delta') !== -1;
@@ -221,11 +223,11 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                         var that = d3.select(this);
                         var interpolator = d3.interpolateNumber(cd[0].lastY, cd[0].y);
                         return function(t) {
-                            that.text(fmt(interpolator(t)));
+                            that.text(fmt(interpolator(t)) + bignumberSuffix);
                         };
                     });
             } else {
-                number.text(fmt(cd[0].y));
+                number.text(fmt(cd[0].y) + bignumberSuffix);
             }
             number.exit().remove();
 

@@ -12,6 +12,7 @@
           "color": "green",
           "symbol": "+"
         },
+        "valueformat": ".1%",
         "reference": 400,
         "showpercentage": true
       },

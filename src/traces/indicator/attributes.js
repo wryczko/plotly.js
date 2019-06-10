@@ -177,6 +177,15 @@ module.exports = {
                 'Sets the horizontal alignment of the `text` within the box.'
             ].join(' ')
         },
+        suffix: {
+            valType: 'string',
+            dflt: '',
+            role: 'style',
+            editType: 'style',
+            description: [
+                'Sets a suffix appearing next to the number.'
+            ].join(' ')
+        }
     },
     delta: {
         reference: {
@@ -197,7 +206,6 @@ module.exports = {
         },
         valueformat: {
             valType: 'string',
-            dflt: '.3s',
             role: 'style',
             editType: 'plot',
             description: [
