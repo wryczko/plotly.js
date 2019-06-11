@@ -242,8 +242,8 @@ function arrayToStr(array) {
 beforeAll(function() {
     jasmine.addMatchers(matchers);
 
-    jasmine.Expectation.prototype.negateIf = function(negate) {
-        if(negate) return this.not;
-        return this;
-    };
+    // jasmine.Expectation.prototype.negateIf = function(negate) {
+    //     if(negate) return this.not;
+    //     return this;
+    // };
 });

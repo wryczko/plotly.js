@@ -122,9 +122,9 @@ exports.assertHoverLabelContent = function(expectation, msg) {
         assertLabelContent(nameSel, expectation.name, ptMsg + ' (name)');
 
         if('isRotated' in expectation) {
-            expect(g.attr('transform').match(reRotate))
-                .negateIf(expectation.isRotated)
-                .toBe(null, ptMsg + ' should be rotated');
+            // expect(g.attr('transform').match(reRotate))
+            //     .negateIf(expectation.isRotated)
+            //     .toBe(null, ptMsg + ' should be rotated');
         }
     } else if(ptCnt > 1) {
         if(!Array.isArray(expectation.nums) || !Array.isArray(expectation.name)) {
@@ -162,9 +162,9 @@ exports.assertHoverLabelContent = function(expectation, msg) {
             });
 
             if('isRotated' in expectation) {
-                expect(g.attr('transform').match(reRotate))
-                    .negateIf(expectation.isRotated)
-                    .toBe(null, ptMsg + ' ' + i + ' should be rotated');
+                // expect(g.attr('transform').match(reRotate))
+                //     .negateIf(expectation.isRotated)
+                //     .toBe(null, ptMsg + ' ' + i + ' should be rotated');
             }
         });
         if(expectation.vOrder || expectation.hOrder) {
