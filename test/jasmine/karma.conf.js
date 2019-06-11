@@ -244,7 +244,21 @@ func.defaultConfig = {
     // - $ npm run test-jasmine -- --tags=gl
     client: {
         tagPrefix: '@',
-        skipTags: isCI ? 'noCI' : null
+        skipTags: isCI ? 'noCI' : null,
+
+        jasmine: {
+            random: false
+
+            // TODO
+            // from https://github.com/karma-runner/karma-jasmine#configuration
+            // (I think) the defaults are:
+            //
+            // random: true,
+            // seed: '4321',
+            // oneFailurePerSpec: true,
+            // failFast: true,
+            // timeoutInterval: 1000
+        }
     },
 
     // use 'karma-spec-reporter' to log info about skipped specs
