@@ -34,7 +34,7 @@
     "domain": {
       "y": [0.33, 0.66]
     },
-    "title": {"text": "<b>Profit</b><br><span style='color: gray; font-size:0.8em'>%</span>"},
+    "title": {"text": "<b>Profit and a very very long label</b><br><span style='color: gray; font-size:0.8em'>%</span>"},
     "type": "indicator",
     "mode": "bignumber+gauge",
     "max": 100,

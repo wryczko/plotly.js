@@ -190,12 +190,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
 
         plotGroup.each(function() {
-            // Title
+            // title
             var title = d3.select(this).selectAll('text.title').data(cd);
             title.enter().append('text').classed('title', true);
             title.attr({
-                x: titleX,
-                y: titleY,
                 'text-anchor': isBullet ? 'end' : 'middle',
                 'alignment-baseline': 'central'
             })
@@ -204,6 +202,16 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             .style('font-size', titleFontSize)
             .call(svgTextUtils.convertToTspans, gd);
             title.exit().remove();
+
+            title.attr('transform', function() {
+                var scaleRatio;
+                if(isBullet) {
+                    scaleRatio = fitTextInside(title, 0.225 * size.w, size.h);
+                } else {
+                    scaleRatio = fitTextInside(title, size.w, size.h);
+                }
+                return strTranslate(titleX, titleY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
+            });
 
             // bignumber
             var data = cd.filter(function() {return hasBigNumber;});
@@ -375,9 +383,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
 
             var vals = Axes.calcTicks(ax);
+            var tickSign;
 
             if(ax.visible) {
-                var tickSign = ax.ticks === 'inside' ? -1 : 1;
+                tickSign = ax.ticks === 'inside' ? -1 : 1;
                 var pad = (ax.linewidth || 1) / 2;
 
                 Axes.drawTicks(gd, ax, {
@@ -407,7 +416,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 size: 1
             };
 
-            // Draw backgrond + steps
+            // Draw background + steps
             var targetArc = gauge.selectAll('g.targetArc').data([bg].concat(trace.gauge.steps));
             targetArc.enter().append('g').classed('targetArc', true).append('path');
             targetArc.select('path')
@@ -468,20 +477,15 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var bulletVerticalMargin = bignumberY - bulletHeight / 2;
             var bullet = d3.select(this).selectAll('g.bullet').data(data);
             bullet.enter().append('g').classed('bullet', true);
+            bullet.exit().remove();
             bullet.attr('transform', 'translate(' + (size.l + (bulletLeft * size.w)) + ',' + bulletVerticalMargin + ')');
 
             // Draw cartesian axis
             // force full redraw of labels and ticks
-            opts = {
-                ticks: 'outside'
-            }; // TODO: use attribute gauge.axis
             var range = [trace.min, trace.max];
             ax = mockAxis(gd, opts, range);
             ax.position = 0;
-            ax.domain = [
-                bulletLeft,
-                bulletRight
-            ];
+            ax.domain = [bulletLeft, bulletRight];
             ax.setScale();
 
             // var g = d3.select(this);
@@ -491,6 +495,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
               .classed('gaugeaxis', true)
               .classed('crisp', true);
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
+            axLayer.exit().remove();
 
             shift = bulletHeight + bulletVerticalMargin;
 
@@ -638,4 +643,11 @@ function strTranslate(x, y) {
 
 function strRotate(angle) {
     return 'rotate(' + angle + ')';
+}
+
+function fitTextInside(el, w, h) {
+    // position the text relative to the slice
+    var textBB = Drawing.bBox(el.node());
+    var ratio = Math.min(w / textBB.width, h / textBB.height);
+    return ratio;
 }

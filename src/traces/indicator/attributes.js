@@ -266,8 +266,8 @@ module.exports = {
     gauge: {
         shape: {
             valType: 'enumerated',
-            editType: 'style',
-            role: 'style',
+            editType: 'plot',
+            role: 'plot',
             dflt: 'angular',
             values: ['angular', 'bullet'],
             description: [

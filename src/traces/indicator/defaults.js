@@ -90,7 +90,6 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     handleTickValueDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear');
 
     var opts = {outerTicks: false, font: layout.font};
-    axisOut.color = 'white';
     handleTickLabelDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
     handleTickMarkDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
 
