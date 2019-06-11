@@ -95,7 +95,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // circular gauge
         var isAngular = hasGauge && trace.gauge.shape === 'angular';
         var theta = Math.PI / 2;
-        var radius = Math.min(size.w / 2, size.h * 0.65);
+        var radius = Math.min(0.85 * size.w / 2, size.h * 0.65 - 20);
         var isWide = (size.w / 2 > size.h * 0.65);
         var innerRadius = cn.innerRadius * radius;
         function valueToAngle(v) {
