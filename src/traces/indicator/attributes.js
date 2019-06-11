@@ -16,7 +16,7 @@ var extendDeep = require('../../lib/extend').extendDeep;
 var fontAttrs = require('../../plots/font_attributes');
 var colorAttrs = require('../../components/color/attributes');
 var domainAttrs = require('../../plots/domain').attributes;
-// var axisAttrs = require('../../plots/cartesian/layout_attributes');
+var axesAttrs = require('../../plots/cartesian/layout_attributes');
 var templatedArray = require('../../plot_api/plot_template').templatedArray;
 var cn = require('./constants.js');
 
@@ -301,6 +301,34 @@ module.exports = {
             role: 'style',
             editType: 'legend',
             description: 'Sets the width (in px) of the border enclosing the gauge.'
+        },
+        axis: {
+            // tick and title properties named and function exactly as in axes
+            tickmode: axesAttrs.tickmode,
+            nticks: axesAttrs.nticks,
+            tick0: axesAttrs.tick0,
+            dtick: axesAttrs.dtick,
+            tickvals: axesAttrs.tickvals,
+            ticktext: axesAttrs.ticktext,
+            ticks: extendFlat({}, axesAttrs.ticks, {dflt: ''}),
+            ticklen: axesAttrs.ticklen,
+            tickwidth: axesAttrs.tickwidth,
+            tickcolor: axesAttrs.tickcolor,
+            showticklabels: axesAttrs.showticklabels,
+            tickfont: fontAttrs({
+                description: 'Sets the color bar\'s tick label font'
+            }),
+            tickangle: axesAttrs.tickangle,
+            tickformat: axesAttrs.tickformat,
+            tickformatstops: axesAttrs.tickformatstops,
+            tickprefix: axesAttrs.tickprefix,
+            showtickprefix: axesAttrs.showtickprefix,
+            ticksuffix: axesAttrs.ticksuffix,
+            showticksuffix: axesAttrs.showticksuffix,
+            separatethousands: axesAttrs.separatethousands,
+            exponentformat: axesAttrs.exponentformat,
+            showexponent: axesAttrs.showexponent,
+            editType: 'plot'
         },
         // Steps (or ranges) and thresholds
         steps: stepsAttrs,

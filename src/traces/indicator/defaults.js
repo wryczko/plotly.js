@@ -14,8 +14,10 @@ var handleDomainDefaults = require('../../plots/domain').defaults;
 var Template = require('../../plot_api/plot_template');
 var handleArrayContainerDefaults = require('../../plots/array_container_defaults');
 var cn = require('./constants.js');
-// var handleDomainDefaults = require('../../plots/domain').defaults;
-// var handleText = require('../bar/defaults').handleText;
+
+var handleTickValueDefaults = require('../../plots/cartesian/tick_value_defaults');
+var handleTickMarkDefaults = require('../../plots/cartesian/tick_mark_defaults');
+var handleTickLabelDefaults = require('../../plots/cartesian/tick_label_defaults');
 
 function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     function coerce(attr, dflt) {
@@ -77,6 +79,20 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     coerceGauge('threshold.size');
     coerceGauge('threshold.width');
     coerceGauge('threshold.color');
+
+    // Gauge axis
+    var axisIn = {};
+    if(gaugeIn) axisIn = gaugeIn.axis || {};
+    var axisOut = Template.newContainer(gaugeOut, 'axis');
+    function coerceGaugeAxis(attr, dflt) {
+        return Lib.coerce(axisIn, axisOut, attributes.gauge.axis, attr, dflt);
+    }
+    handleTickValueDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear');
+
+    var opts = {outerTicks: false, font: layout.font};
+    axisOut.color = 'white';
+    handleTickLabelDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
+    handleTickMarkDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
 
     // delta attributes
     coerce('delta.font.color', traceOut.number.font.color);

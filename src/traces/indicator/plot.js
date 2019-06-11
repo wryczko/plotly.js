@@ -16,13 +16,13 @@ var MID_SHIFT = require('../../constants/alignment').MID_SHIFT;
 var Drawing = require('../../components/drawing');
 var cn = require('./constants');
 var svgTextUtils = require('../../lib/svg_text_utils');
-// var Plots = require('../../plots/plots');
+
 var Axes = require('../../plots/cartesian/axes');
 var handleAxisDefaults = require('../../plots/cartesian/axis_defaults');
 var handleAxisPositionDefaults = require('../../plots/cartesian/position_defaults');
 var axisLayoutAttrs = require('../../plots/cartesian/layout_attributes');
 var setConvertPolar = require('../../plots/polar/set_convert');
-//
+
 // // arc cotangent
 // function arcctg(x) { return Math.PI / 2 - Math.atan(x); }
 // var barPlot = require('../bar/plot').plot;
@@ -108,7 +108,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // bullet gauge
         var isBullet = hasGauge && trace.gauge.shape === 'bullet';
 
-        // TODO: Move the following to defaults
         // Position elements
         var bignumberX, bignumberY, bignumberFontSize, bignumberBaseline;
         var bignumberAnchor = 'middle';
@@ -314,9 +313,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             }
 
             // Draw angular axis
-            var opts = {
-                autorange: false
-            }; // TODO: use attribute gauge.axis
+            var opts = trace.gauge.axis;
             var ax = mockAxis(gd, opts);
             ax.type = 'indicator';
             ax.range = [trace.min, trace.max];
@@ -359,6 +356,17 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 return -0.5 * (1 + Math.sin(rad)) * h;
             };
 
+            var shift = bulletHeight;
+            var _transFn = function(rad) {
+                return strTranslate(centerX + radius * Math.cos(rad), bignumberY - radius * Math.sin(rad));
+            };
+            var transFn = function(d) {
+                return _transFn(t2g(d));
+            };
+            var transFn2 = function(d) {
+                var rad = t2g(d);
+                return _transFn(rad) + strRotate(-rad2deg(rad));
+            };
 
             var axLayer = d3.select(this).selectAll('g.gaugeaxis').data(data);
             axLayer.enter().append('g')
@@ -366,22 +374,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
               .classed('crisp', true);
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
 
-            var shift = bulletHeight;
-
             var vals = Axes.calcTicks(ax);
-
-            var _transFn = function(rad) {
-                return strTranslate(centerX + radius * Math.cos(rad), bignumberY - radius * Math.sin(rad));
-            };
-
-            var transFn = function(d) {
-                return _transFn(t2g(d));
-            };
-
-            var transFn2 = function(d) {
-                var rad = t2g(d);
-                return _transFn(rad) + strRotate(-rad2deg(rad));
-            };
 
             if(ax.visible) {
                 var tickSign = ax.ticks === 'inside' ? -1 : 1;
@@ -390,7 +383,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 Axes.drawTicks(gd, ax, {
                     vals: vals,
                     layer: axLayer,
-                    // path: Axes.makeTickPath(ax, shift, tickSign),
                     path: 'M' + (tickSign * pad) + ',0h' + (tickSign * ax.ticklen),
                     transFn: transFn2,
                     crips: true
@@ -590,6 +582,7 @@ function mockAxis(gd, opts, zrange) {
 
     var cbAxisIn = {
         type: 'linear',
+        ticks: 'outside',
         range: zrange,
         tickmode: opts.tickmode,
         nticks: opts.nticks,
@@ -597,10 +590,9 @@ function mockAxis(gd, opts, zrange) {
         dtick: opts.dtick,
         tickvals: opts.tickvals,
         ticktext: opts.ticktext,
-        ticks: 'outside',
         ticklen: opts.ticklen,
         tickwidth: opts.tickwidth,
-        tickcolor: opts.tickcolor || fullLayout.font.color,
+        tickcolor: opts.tickcolor,
         showticklabels: opts.showticklabels,
         tickfont: opts.tickfont,
         tickangle: opts.tickangle,
@@ -615,7 +607,6 @@ function mockAxis(gd, opts, zrange) {
         title: opts.title,
         showline: true,
         anchor: 'free',
-        side: 'right',
         position: 1
     };
 
@@ -628,8 +619,7 @@ function mockAxis(gd, opts, zrange) {
         letter: 'x',
         font: fullLayout.font,
         noHover: true,
-        noTickson: true,
-        calendar: fullLayout.calendar  // not really necessary (yet?)
+        noTickson: true
     };
 
     function coerce(attr, dflt) {
@@ -646,94 +636,6 @@ function strTranslate(x, y) {
     return 'translate(' + x + ',' + y + ')';
 }
 
-
 function strRotate(angle) {
     return 'rotate(' + angle + ')';
 }
-
-// Draw bullet
-// if(isBullet) {
-//     var mockFigure = {
-//         data: [],
-//         layout: {
-//             xaxis: {
-//                 type: 'linear',
-//                 domain: [0, 1],
-//                 range: [trace.min, trace.max],
-//             },
-//             yaxis: {
-//                 type: 'linear',
-//                 range: [-0.5, 0.5]
-//             },
-//             width: fullLayout.width,
-//             height: 25,
-//             margin: { t: 0, b: 0, l: size.l, r: size.r },
-//             paper_bgcolor: 'rgba(0, 0, 0, 0)'
-//         },
-//         _context: gd._context
-//     };
-//
-//     Plots.supplyDefaults(mockFigure);
-//
-//     var xa = mockFigure._fullLayout.xaxis;
-//     var ya = mockFigure._fullLayout.yaxis;
-//
-//     xa.clearCalc();
-//     xa.setScale();
-//     ya.clearCalc();
-//     ya.setScale();
-//
-//     var plotinfo = {
-//         xaxis: xa,
-//         yaxis: ya
-//     };
-//     var opts = {
-//         mode: 'overlay'
-//     };
-//     var barWidth = -0.5;
-//     var cdBarModule = [[{
-//         i: 0,
-//         text: 'max',
-//         mlw: 1,
-//         s: 0,
-//         p: 0,
-//         p0: -barWidth,
-//         p1: barWidth,
-//         s0: 0,
-//         s1: trace.max,
-//         trace: {orientation: 'h', marker: {color: 'red'}}
-//     }, {
-//         i: 0,
-//         text: 'value',
-//         mlw: 1,
-//         p: 0,
-//         s: trace.target,
-//         p0: -barWidth,
-//         p1: barWidth,
-//         s0: 0,
-//         s1: trace.target,
-//         trace: {orientation: 'h', marker: {color: 'red'}}
-//     }, {
-//         i: 0,
-//         text: 'value',
-//         mlw: 1,
-//         p: 0,
-//         s: cd0.y,
-//         p0: -0.75 * barWidth,
-//         p1: 0.75 * barWidth,
-//         s0: 0,
-//         s1: cd0.y,
-//         trace: {orientation: 'h', marker: {color: 'red'}}
-//     }]];
-//     barPlot(gd, plotinfo, cdBarModule, fullLayout._cartesianlayer, opts);
-//
-//     var bars = fullLayout._cartesianlayer.select('.bars');
-//     bars.attr('transform', 'translate(' + size.l + ',' + 0.95 * size.h + ')');
-//     bars.selectAll('path').each(function(d, i) {
-//         var colors = {2: 'green', 1: 'rgba(255, 255, 0, 0.5)', 0: 'rgba(255, 255, 255, 0.25)'};
-//         d3.select(this).style('fill', colors[i]);
-//     });
-//
-//     Axes.drawOne(gd, xa);
-//     Axes.drawOne(gd, ya);
-// }
