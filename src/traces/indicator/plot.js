@@ -112,7 +112,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // Position elements
         var bignumberX, bignumberY, bignumberFontSize, bignumberBaseline;
         var bignumberAnchor = 'middle';
-        var deltaX, deltaY, deltaFontSize, deltaBaseline;
+        var deltaX, deltaFontSize, deltaBaseline;
         var deltaAnchor = 'middle';
         var titleX, titleY, titleFontSize;
 
@@ -140,7 +140,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(hasBigNumber) {
                 // Center the text vertically
                 deltaFontSize = 0.5 * bignumberFontSize;
-                deltaY = Math.min(size.t + size.h / 2 + bignumberFontSize / 2 + deltaFontSize / 2);
                 if(trace.number.align === 'left') {
                     bignumberX = size.l;
                     deltaX = bignumberX;
@@ -155,7 +154,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 }
             } else {
                 deltaFontSize = bignumberFontSize;
-                deltaY = size.t + size.h / 2;
             }
             titleFontSize = 0.35 * bignumberFontSize;
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
@@ -172,8 +170,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 deltaFontSize = 0.35 * bignumberFontSize;
                 gaugeFontSize = Math.max(0.25 * bignumberFontSize, (radius - innerRadius) / 4);
                 titleFontSize = 0.35 * bignumberFontSize;
-                deltaY = bignumberY + deltaFontSize;
-                if(!hasBigNumber) deltaY += bignumberFontSize;
                 if(isWide) {
                     titleY = size.t + (0.25 / 2) * size.h - titleFontSize / 2;
                 } else {
@@ -188,14 +184,12 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 bignumberX = size.l + (p + (1 - p) / 2) * size.w;
                 deltaX = bignumberX;
                 deltaFontSize = 0.5 * bignumberFontSize;
-                deltaY = bignumberY + bignumberFontSize / 2 + deltaFontSize;
                 titleFontSize = 0.4 * bignumberFontSize;
                 titleY = bignumberY;
             }
 
             if(!hasBigNumber) {
                 deltaFontSize = 0.75 * bignumberFontSize;
-                deltaY = bignumberY;
             }
         }
         var deltaDy;
