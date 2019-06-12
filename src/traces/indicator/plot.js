@@ -96,11 +96,11 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var isAngular = hasGauge && trace.gauge.shape === 'angular';
         var theta = Math.PI / 2;
         var radius = Math.min(0.85 * size.w / 2, size.h * 0.65 - 20);
+        var innerRadius = cn.innerRadius * radius;
         var gaugePosition;
         var isWide = (size.w / 2 > size.h * 0.65);
-        var innerRadius = cn.innerRadius * radius;
         function valueToAngle(v) {
-            var angle = (v - trace.min) / (trace.max - trace.min) * Math.PI - Math.PI / 2;
+            var angle = (v - trace.min) / (trace.max - trace.min) * Math.PI - theta;
             if(angle < -theta) return -theta;
             if(angle > theta) return theta;
             return angle;
@@ -108,6 +108,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         // bullet gauge
         var isBullet = hasGauge && trace.gauge.shape === 'bullet';
+        var bulletHeight = Math.min(cn.bulletHeight, size.h / 2);
 
         // Position elements
         var bignumberX, bignumberY, bignumberFontSize, bignumberBaseline;
@@ -116,7 +117,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var deltaAnchor = 'middle';
         var titleX, titleY, titleFontSize;
 
-        var bulletHeight = Math.min(cn.bulletHeight, size.h / 2);
         var gaugeFontSize;
 
         // Center everything
@@ -179,6 +179,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(isBullet) {
                 // Center the text
                 var p = 0.75;
+                numbersMaxWidth = 0.25 * size.w;
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 bignumberY = size.t + size.h / 2;
                 bignumberX = size.l + (p + (1 - p) / 2) * size.w;
@@ -194,18 +195,20 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
         var deltaDy;
         deltaX = 0;
-        if(trace.delta.position === 'bottom' && hasBigNumber) {
-            deltaDy = (bignumberFontSize / 2 + deltaFontSize / 2);
-        }
-        if(trace.delta.position === 'top' && hasBigNumber) {
-            deltaDy = -(bignumberFontSize / 2 + deltaFontSize / 2);
-            bignumberY += deltaFontSize;
-        }
-        if(trace.delta.position === 'right' && hasBigNumber) {
-            deltaX = undefined; deltaDy = undefined;
-        }
-        if(trace.delta.position === 'left' && hasBigNumber) {
-            deltaX = undefined; deltaDy = undefined;
+        if(hasDelta && hasBigNumber) {
+            if(trace.delta.position === 'bottom') {
+                deltaDy = (bignumberFontSize / 2 + deltaFontSize / 2);
+            }
+            if(trace.delta.position === 'top') {
+                deltaDy = -(bignumberFontSize / 2 + deltaFontSize / 2);
+                bignumberY += deltaFontSize;
+            }
+            if(trace.delta.position === 'right') {
+                deltaX = undefined; deltaDy = undefined;
+            }
+            if(trace.delta.position === 'left') {
+                deltaX = undefined; deltaDy = undefined;
+            }
         }
 
         plotGroup.each(function() {
