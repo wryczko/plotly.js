@@ -12,7 +12,7 @@
       "threshold": {
         "color": "black",
         "width": 2,
-        "size": 0.75,
+        "height": 0.75,
         "value": 170
       },
       "bgcolor": "rgba(0, 0, 0, 0.1)",
@@ -44,7 +44,7 @@
       "threshold": {
         "color": "black",
         "width": 2,
-        "size": 0.75,
+        "height": 0.75,
         "value": 50
       },
       "bgcolor": "rgba(0, 0, 0, 0.1)",

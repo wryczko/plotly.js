@@ -448,8 +448,32 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 size: 1
             };
 
+            // TODO: threshold reuse arc path with very small range
+            // data = cd.filter(function() {return trace.gauge.threshold.value;});
+            // var threshold = gauge.selectAll('g.threshold').data(data);
+            // threshold.enter().append('g').classed('threshold', true).append('line');
+            // threshold.select('line')
+            //     .attr('x1', Math.sin(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
+            //     .attr('x2', Math.sin(valueToAngle(trace.gauge.threshold.value)) * radius)
+            //     .attr('y1', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
+            //     .attr('y2', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * radius)
+            //     .style('stroke', trace.gauge.threshold.color)
+            //     .style('stroke-width', trace.gauge.threshold.width);
+            // threshold.exit().remove();
+
+            var v = trace.gauge.threshold.value;
+            var threshold = {
+                range: [v - trace.gauge.threshold.width / 2, v + trace.gauge.threshold.width / 2],
+                color: trace.gauge.threshold.color,
+                line: {
+                    color: trace.gauge.threshold.color,
+                    width: 1
+                },
+                size: trace.gauge.threshold.height
+            };
+
             // Draw background + steps
-            var targetArc = gauge.selectAll('g.targetArc').data([bg].concat(trace.gauge.steps));
+            var targetArc = gauge.selectAll('g.targetArc').data([bg].concat(trace.gauge.steps).concat(threshold));
             targetArc.enter().append('g').classed('targetArc', true).append('path');
             targetArc.select('path')
                   .attr('d', function(d) {
@@ -461,19 +485,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                   .style('stroke', function(d) { return d.line.color;})
                   .style('stroke-width', function(d) { return d.line.width;});
             targetArc.exit().remove();
-
-            // TODO: threshold reuse arc path with very small range
-            data = cd.filter(function() {return trace.gauge.threshold.value;});
-            var threshold = gauge.selectAll('g.threshold').data(data);
-            threshold.enter().append('g').classed('threshold', true).append('line');
-            threshold.select('line')
-                .attr('x1', Math.sin(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
-                .attr('x2', Math.sin(valueToAngle(trace.gauge.threshold.value)) * radius)
-                .attr('y1', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
-                .attr('y2', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * radius)
-                .style('stroke', trace.gauge.threshold.color)
-                .style('stroke-width', trace.gauge.threshold.width);
-            threshold.exit().remove();
 
             // Draw foreground with transition
             var valueArcPath = arcPathGenerator(trace.gauge.value.size);
@@ -550,7 +561,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 });
             }
 
-
             // Draw bullet background and steps
             var targetBullet = bullet.selectAll('g.targetBullet').data([bg].concat(trace.gauge.steps));
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
@@ -586,14 +596,15 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             }
             fgBullet.exit().remove();
 
+            // Draw threshold
             data = cd.filter(function() {return trace.gauge.threshold.value;});
             threshold = bullet.selectAll('g.threshold').data(data);
             threshold.enter().append('g').classed('threshold', true).append('line');
             threshold.select('line')
                 .attr('x1', ax.c2p(trace.gauge.threshold.value))
                 .attr('x2', ax.c2p(trace.gauge.threshold.value))
-                .attr('y1', (1 - trace.gauge.threshold.size) / 2 * bulletHeight)
-                .attr('y2', (1 - (1 - trace.gauge.threshold.size) / 2) * bulletHeight)
+                .attr('y1', (1 - trace.gauge.threshold.height) / 2 * bulletHeight)
+                .attr('y2', (1 - (1 - trace.gauge.threshold.height) / 2) * bulletHeight)
                 .style('stroke', trace.gauge.threshold.color)
                 .style('stroke-width', trace.gauge.threshold.width);
             threshold.exit().remove();

@@ -366,11 +366,12 @@ module.exports = {
                     'Sets the color of the threshold line.'
                 ].join(' ')
             },
-            size: {
+            height: {
                 valType: 'number',
                 role: 'style',
                 min: 0,
                 max: 1,
+                dflt: 0.85,
                 editType: 'style',
                 description: [
                     'Sets the height of the threshold line as a fraction.'

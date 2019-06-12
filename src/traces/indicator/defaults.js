@@ -79,7 +79,7 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
 
     // Gauge threshold
     coerceGauge('threshold.value');
-    coerceGauge('threshold.size');
+    coerceGauge('threshold.height');
     coerceGauge('threshold.width');
     coerceGauge('threshold.color');
 
