@@ -130,6 +130,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         deltaBaseline = 'central';
         titleX = isBullet ? size.l + 0.23 * size.w : centerX;
 
+        var numbersMaxWidth = 0.85 * size.w;
+        var numbersMaxHeight = size.h;
+
         if(!hasGauge) {
             // when no gauge, we are only constrained by figure size
             bignumberFontSize = Math.min(size.w / (fmt(trace.max).length), size.h / 3);
@@ -158,6 +161,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
         } else {
             if(isAngular) {
+                numbersMaxWidth = 2 * innerRadius;
+                numbersMaxHeight = innerRadius;
                 bignumberY = size.t + size.h - (0.15 * size.h);
                 // if(!isWide) bignumberY -= (size.h - radius) / 2;
                 if(!isWide) bignumberY = size.t + size.h / 2;
@@ -200,6 +205,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
         if(trace.delta.position === 'top' && hasBigNumber) {
             deltaDy = -(bignumberFontSize / 2 + deltaFontSize / 2);
+            bignumberY += deltaFontSize;
         }
         if(trace.delta.position === 'right' && hasBigNumber) {
             deltaX = undefined; deltaDy = undefined;
@@ -257,6 +263,11 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             sel.attr('text-anchor', function(d) {return d['text-anchor'];});
             sel.attr('alignment-baseline', function(d) {return d['alignment-baseline'];});
             sel.attr('class', function(d) { return d.class;});
+            sel.attr('dx', function(d, i) {
+                var pos = trace.delta.position;
+                if(i === 1 && pos === 'left' || pos === 'right') return 10;
+                return undefined;
+            });
 
             // bignumber
             // var data = cd.filter(function() {return hasBigNumber;});
@@ -324,6 +335,12 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 });
             }
             // delta.exit().remove();
+
+            g.attr('transform', function() {
+                var scaleRatio;
+                scaleRatio = fitTextInside(g, numbersMaxWidth, numbersMaxHeight);
+                return strTranslate(bignumberX, bignumberY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
+            });
 
             // Draw circular gauge
             data = cd.filter(function() {return isAngular;});
