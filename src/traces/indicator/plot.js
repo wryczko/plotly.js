@@ -23,9 +23,16 @@ var handleAxisPositionDefaults = require('../../plots/cartesian/position_default
 var axisLayoutAttrs = require('../../plots/cartesian/layout_attributes');
 var setConvertPolar = require('../../plots/polar/set_convert');
 
-// // arc cotangent
-// function arcctg(x) { return Math.PI / 2 - Math.atan(x); }
-// var barPlot = require('../bar/plot').plot;
+var anchor = {
+    'left': 'start',
+    'center': 'middle',
+    'right': 'end'
+};
+var position = {
+    'left': 0,
+    'center': 0.5,
+    'right': 1
+};
 
 module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallback) {
     var fullLayout = gd._fullLayout;
@@ -44,14 +51,18 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
     }
 
-    // Compute aspect ratio
-    // var aspectratio = fullLayout._size.w / fullLayout._size.h;
-    // var theta = arcctg(aspectratio / 2);
-
     Lib.makeTraceGroups(fullLayout._indicatorlayer, cdModule, 'trace').each(function(cd) {
         var plotGroup = d3.select(this);
         var cd0 = cd[0];
         var trace = cd0.trace;
+
+        // Elements in trace
+        var hasTitle = trace.title.text;
+        var hasBigNumber = trace.mode.indexOf('bignumber') !== -1;
+        var hasDelta = trace.mode.indexOf('delta') !== -1;
+        var hasGauge = trace.mode.indexOf('gauge') !== -1;
+        var isAngular = hasGauge && trace.gauge.shape === 'angular';
+        var isBullet = hasGauge && trace.gauge.shape === 'bullet';
 
         // Domain size
         var domain = trace.domain;
@@ -65,27 +76,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         });
 
         // title
-        var hasTitle = trace.title.text;
-        var anchor = {
-            'left': 'start',
-            'center': 'middle',
-            'right': 'end'
-        };
-        var position = {
-            'left': 0,
-            'center': 0.5,
-            'right': 1
-        };
         var titleAnchor = anchor[trace.title.align];
 
         // bignumber
-        var hasBigNumber = trace.mode.indexOf('bignumber') !== -1;
         var fmt = d3.format(trace.valueformat);
         var bignumberSuffix = trace.number.suffix;
         if(bignumberSuffix) bignumberSuffix = ' ' + bignumberSuffix;
 
         // delta
-        var hasDelta = trace.mode.indexOf('delta') !== -1;
         var deltaFmt = d3.format(trace.delta.valueformat);
         if(!trace._deltaLastValue) trace._deltaLastValue = 0;
         var deltaValue = function(d) {
@@ -100,16 +98,12 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             return d.delta >= 0 ? trace.delta.increasing.color : trace.delta.decreasing.color;
         };
 
-        // gauge related
-        var hasGauge = trace.mode.indexOf('gauge') !== -1;
-
         // circular gauge
-        var isAngular = hasGauge && trace.gauge.shape === 'angular';
         var theta = Math.PI / 2;
         var radius = Math.min(0.85 * size.w / 2, size.h * 0.65 - 20);
         var innerRadius = cn.innerRadius * radius;
         var gaugePosition;
-        var isWide = (size.w / 2 > size.h * 0.65);
+        var isWide = (size.w / 2 > size.h * 0.65 - 20);
         function valueToAngle(v) {
             var angle = (v - trace.min) / (trace.max - trace.min) * Math.PI - theta;
             if(angle < -theta) return -theta;
@@ -118,25 +112,19 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
 
         // bullet gauge
-        var isBullet = hasGauge && trace.gauge.shape === 'bullet';
         var bulletHeight = Math.min(cn.bulletHeight, size.h / 2);
 
         // Position elements
-        var bignumberX, bignumberY, bignumberFontSize, bignumberBaseline;
+        var bignumberX, bignumberY, bignumberFontSize;
         var bignumberAnchor = anchor[trace.number.align];
-        var deltaX, deltaFontSize, deltaBaseline;
+        var deltaX, deltaFontSize;
         var deltaAnchor = anchor[trace.number.align];
-        var titleX, titleY, titleFontSize;
-
-        // var gaugeFontSize;
+        var titleX, titleY, titleFontSize, textBaseline;
 
         var centerX = size.l + size.w / 2;
         bignumberX = size.l + position[trace.number.align] * size.w;
-
-        // bignumberBaseline = hasGauge && isAngular ? 'bottom' : 'central';
-        bignumberBaseline = 'central';
-        deltaBaseline = 'central';
         titleX = size.l + size.w * position[trace.title.align];
+        textBaseline = 'central';
 
         var numbersMaxWidth = 0.85 * size.w;
         var numbersMaxHeight = size.h;
@@ -150,7 +138,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             } else {
                 deltaFontSize = bignumberFontSize;
             }
-            bignumberAnchor = deltaAnchor = anchor[trace.number.align];
             titleFontSize = 0.35 * bignumberFontSize;
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
         } else {
@@ -214,7 +201,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             title.enter().append('text').classed('title', true);
             title.attr({
                 'text-anchor': titleAnchor,
-                'alignment-baseline': 'central'
+                'alignment-baseline': textBaseline
             })
             .text(trace.title.text)
             .call(Drawing.font, trace.title.font)
@@ -238,12 +225,12 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var data = [];
             var numberSpec = {
                 'text-anchor': bignumberAnchor,
-                'alignment-baseline': bignumberBaseline,
+                'alignment-baseline': textBaseline,
                 class: 'number'
             };
             var deltaSpec = {
                 'text-anchor': deltaAnchor,
-                'alignment-baseline': deltaBaseline,
+                'alignment-baseline': textBaseline,
                 class: 'delta'
             };
             if(hasBigNumber) data.push(numberSpec);
