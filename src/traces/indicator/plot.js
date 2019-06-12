@@ -445,7 +445,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                     color: trace.gauge.bordercolor,
                     width: trace.gauge.borderwidth
                 },
-                size: 1
+                height: 1
             };
 
             // Reexpress threshold for drawing
@@ -457,7 +457,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                     color: trace.gauge.threshold.color,
                     width: trace.gauge.threshold.width
                 },
-                size: trace.gauge.threshold.height
+                height: trace.gauge.threshold.height
             };
 
             // Draw background + steps
@@ -465,7 +465,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             targetArc.enter().append('g').classed('targetArc', true).append('path');
             targetArc.select('path')
                   .attr('d', function(d) {
-                      return arcPathGenerator(d.size)
+                      return arcPathGenerator(d.height)
                         .startAngle(valueToAngle(d.range[0]))
                         .endAngle(valueToAngle(d.range[1]))();
                   })
@@ -475,7 +475,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             targetArc.exit().remove();
 
             // Draw foreground with transition
-            var valueArcPath = arcPathGenerator(trace.gauge.value.size);
+            var valueArcPath = arcPathGenerator(trace.gauge.value.height);
             var fgArc = gauge.selectAll('g.fgArc').data(cd);
             fgArc.enter().append('g').classed('fgArc', true).append('path');
 
@@ -503,7 +503,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var bulletRight = (hasBigNumber || hasDelta) ? (1 - cn.bulletTitleSize) : 1.0;
 
             data = cd.filter(function() {return isBullet;});
-            var innerBulletHeight = trace.gauge.value.size * bulletHeight;
+            var innerBulletHeight = trace.gauge.value.height * bulletHeight;
             var bulletVerticalMargin = numbersY - bulletHeight / 2;
             var bullet = d3.select(this).selectAll('g.bullet').data(data);
             bullet.enter().append('g').classed('bullet', true);

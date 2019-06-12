@@ -64,8 +64,8 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     coerceGauge('value.color');
     coerceGauge('value.line.color');
     coerceGauge('value.line.width');
-    var defaultValueSize = cn.valueHeight * (traceOut.gauge.shape === 'bullet' ? 0.5 : 1);
-    coerceGauge('value.size', defaultValueSize);
+    var defaultValueHeight = cn.valueHeight * (traceOut.gauge.shape === 'bullet' ? 0.5 : 1);
+    coerceGauge('value.height', defaultValueHeight);
 
     // Gauge steps
     if(gaugeIn && gaugeIn.steps) {
@@ -92,7 +92,7 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     }
     handleTickValueDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear');
 
-    var opts = {outerTicks: false, font: layout.font};
+    var opts = {outerTicks: false, font: layout.font, nticks: 11};
     handleTickLabelDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
     handleTickMarkDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
 
@@ -118,7 +118,7 @@ function stepDefaults(valueIn, valueOut) {
     coerce('line.color');
     coerce('line.width');
     coerce('range');
-    coerce('size');
+    coerce('height');
 }
 
 module.exports = {

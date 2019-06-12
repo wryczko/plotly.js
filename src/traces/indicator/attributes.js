@@ -58,7 +58,7 @@ var gaugeBarAttrs = {
         },
         editType: 'calc'
     },
-    size: {
+    height: {
         valType: 'number',
         role: 'plot',
         min: 0,
@@ -66,7 +66,7 @@ var gaugeBarAttrs = {
         dflt: 1,
         editType: 'plot',
         description: [
-            'Sets the size of the bar as a fraction of total size.'
+            'Sets the height of the bar as a fraction of total height.'
         ].join(' ')
     },
     editType: 'calc'
