@@ -614,7 +614,7 @@ function arcTween(arc, endAngle, newAngle) {
 function mockAxis(gd, opts, zrange) {
     var fullLayout = gd._fullLayout;
 
-    var cbAxisIn = {
+    var axisIn = {
         type: 'linear',
         ticks: 'outside',
         range: zrange,
@@ -644,7 +644,7 @@ function mockAxis(gd, opts, zrange) {
         position: 1
     };
 
-    var cbAxisOut = {
+    var axisOut = {
         type: 'linear',
         _id: 'x' + opts._id
     };
@@ -657,13 +657,13 @@ function mockAxis(gd, opts, zrange) {
     };
 
     function coerce(attr, dflt) {
-        return Lib.coerce(cbAxisIn, cbAxisOut, axisLayoutAttrs, attr, dflt);
+        return Lib.coerce(axisIn, axisOut, axisLayoutAttrs, attr, dflt);
     }
 
-    handleAxisDefaults(cbAxisIn, cbAxisOut, coerce, axisOptions, fullLayout);
-    handleAxisPositionDefaults(cbAxisIn, cbAxisOut, coerce, axisOptions);
+    handleAxisDefaults(axisIn, axisOut, coerce, axisOptions, fullLayout);
+    handleAxisPositionDefaults(axisIn, axisOut, coerce, axisOptions);
 
-    return cbAxisOut;
+    return axisOut;
 }
 
 function strTranslate(x, y) {
@@ -674,9 +674,9 @@ function strRotate(angle) {
     return 'rotate(' + angle + ')';
 }
 
-function fitTextInside(el, w, h) {
-    // position the text relative to the slice
+function fitTextInside(el, width, height) {
+    // compute scaling ratio to have text fit within specified width and height
     var textBB = Drawing.bBox(el.node());
-    var ratio = Math.min(w / textBB.width, h / textBB.height);
+    var ratio = Math.min(width / textBB.width, height / textBB.height);
     return ratio;
 }
