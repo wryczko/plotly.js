@@ -253,14 +253,7 @@ func.defaultConfig = {
         tagPrefix: '@',
         skipTags: isCI ? 'noCI' : null,
 
-        // from https://github.com/karma-runner/karma-jasmine#configuration
-        // (I think) the defaults are:
-        //
-        // random: true,
-        // seed: '4321',
-        // oneFailurePerSpec: true,
-        // failFast: true,
-        // timeoutInterval: 1000
+        // See https://jasmine.github.io/api/3.4/Configuration.html
         jasmine: {
             random: argv.randomize
         }
