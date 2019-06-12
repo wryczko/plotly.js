@@ -280,7 +280,7 @@ func.defaultConfig = {
 
     // TODO !!!
     // e.g. when a test file does not container a given spec tags
-    failOnEmptyTestSuite: false
+    // failOnEmptyTestSuite: false
 };
 
 func.defaultConfig.preprocessors[pathToCustomMatchers] = ['browserify'];
