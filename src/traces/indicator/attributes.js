@@ -30,8 +30,8 @@ delete(textFontAttrs.size); // TODO: relative size?
 var gaugeBarAttrs = {
     color: {
         valType: 'color',
-        editType: 'style',
-        role: 'style',
+        editType: 'plot',
+        role: 'plot',
         description: [
             'Sets the background color of the arc.'
         ].join(' ')
@@ -39,19 +39,19 @@ var gaugeBarAttrs = {
     line: {
         color: {
             valType: 'color',
-            role: 'style',
+            role: 'plot',
             dflt: colorAttrs.defaultLine,
-            editType: 'style',
+            editType: 'plot',
             description: [
                 'Sets the color of the line enclosing each sector.'
             ].join(' ')
         },
         width: {
             valType: 'number',
-            role: 'style',
+            role: 'plot',
             min: 0,
             dflt: 0,
-            editType: 'style',
+            editType: 'plot',
             description: [
                 'Sets the width (in px) of the line enclosing each sector.'
             ].join(' ')
@@ -60,11 +60,11 @@ var gaugeBarAttrs = {
     },
     size: {
         valType: 'number',
-        role: 'style',
+        role: 'plot',
         min: 0,
         max: 1,
         dflt: 1,
-        editType: 'style',
+        editType: 'plot',
         description: [
             'Sets the size of the bar as a fraction of total size.'
         ].join(' ')
@@ -116,7 +116,7 @@ module.exports = {
     valueformat: {
         valType: 'string',
         dflt: '.3s',
-        role: 'style',
+        role: 'plot',
         editType: 'plot',
         description: [
             'Sets the value formatting rule using d3 formatting mini-language',
@@ -192,8 +192,8 @@ module.exports = {
         suffix: {
             valType: 'string',
             dflt: '',
-            role: 'style',
-            editType: 'style',
+            role: 'plot',
+            editType: 'plot',
             description: [
                 'Sets a suffix appearing next to the number.'
             ].join(' ')
@@ -212,7 +212,7 @@ module.exports = {
         position: {
             valType: 'enumerated',
             values: ['top', 'bottom', 'left', 'right'],
-            role: 'style',
+            role: 'plot',
             dflt: 'bottom',
             editType: 'plot',
             description: [
@@ -221,8 +221,8 @@ module.exports = {
         },
         showpercentage: {
             valType: 'boolean',
-            editType: 'style',
-            role: 'style',
+            editType: 'plot',
+            role: 'plot',
             dflt: false,
             description: [
                 'Show relative change in percentage'
@@ -230,7 +230,7 @@ module.exports = {
         },
         valueformat: {
             valType: 'string',
-            role: 'style',
+            role: 'plot',
             editType: 'plot',
             description: [
                 'Sets the value formatting rule using d3 formatting mini-language',
@@ -241,44 +241,44 @@ module.exports = {
         increasing: {
             symbol: {
                 valType: 'string',
-                role: 'style',
+                role: 'plot',
                 dflt: cn.DIRSYMBOL.increasing,
-                editType: 'style',
+                editType: 'plot',
                 description: [
                     'Sets the symbol to display for increasing value'
                 ].join(' ')
             },
             color: {
                 valType: 'color',
-                role: 'style',
+                role: 'plot',
                 dflt: cn.INCREASING_COLOR,
-                editType: 'style',
+                editType: 'plot',
                 description: [
                     'Sets the color for increasing value.'
                 ].join(' ')
             },
-            editType: 'style'
+            editType: 'plot'
         },
         decreasing: {
             symbol: {
                 valType: 'string',
-                role: 'style',
+                role: 'plot',
                 dflt: cn.DIRSYMBOL.decreasing,
-                editType: 'style',
+                editType: 'plot',
                 description: [
                     'Sets the symbol to display for increasing value'
                 ].join(' ')
             },
             color: {
                 valType: 'color',
-                role: 'style',
+                role: 'plot',
                 dflt: cn.DECREASING_COLOR,
-                editType: 'style',
+                editType: 'plot',
                 description: [
                     'Sets the color for increasing value.'
                 ].join(' ')
             },
-            editType: 'style'
+            editType: 'plot'
         },
         font: extendFlat({}, textFontAttrs, {
             description: [
@@ -291,7 +291,7 @@ module.exports = {
         shape: {
             valType: 'enumerated',
             editType: 'plot',
-            role: 'style',
+            role: 'plot',
             dflt: 'angular',
             values: ['angular', 'bullet'],
             description: [
@@ -307,14 +307,14 @@ module.exports = {
         // Background of the gauge
         bgcolor: {
             valType: 'color',
-            role: 'style',
+            role: 'plot',
             editType: 'plot',
             description: 'Sets the gauge background color.'
         },
         bordercolor: {
             valType: 'color',
             dflt: colorAttrs.defaultLine,
-            role: 'style',
+            role: 'plot',
             editType: 'plot',
             description: 'Sets the color of the border enclosing the gauge.'
         },
@@ -322,7 +322,7 @@ module.exports = {
             valType: 'number',
             min: 0,
             dflt: 0,
-            role: 'style',
+            role: 'plot',
             editType: 'plot',
             description: 'Sets the width (in px) of the border enclosing the gauge.'
         },
@@ -359,30 +359,30 @@ module.exports = {
         threshold: {
             color: {
                 valType: 'color',
-                role: 'style',
+                role: 'plot',
                 dflt: colorAttrs.defaultLine,
-                editType: 'style',
+                editType: 'plot',
                 description: [
                     'Sets the color of the threshold line.'
                 ].join(' ')
             },
             height: {
                 valType: 'number',
-                role: 'style',
+                role: 'plot',
                 min: 0,
                 max: 1,
                 dflt: 0.85,
-                editType: 'style',
+                editType: 'plot',
                 description: [
                     'Sets the height of the threshold line as a fraction.'
                 ].join(' ')
             },
             width: {
                 valType: 'number',
-                role: 'style',
+                role: 'plot',
                 min: 0,
                 dflt: 1,
-                editType: 'style',
+                editType: 'plot',
                 description: [
                     'Sets the width (in px) of the threshold line.'
                 ].join(' ')
