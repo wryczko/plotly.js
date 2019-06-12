@@ -1,20 +1,65 @@
 {
   "data": [{
+    "domain": {"x": [0, 0.5], "y": [0, 0.5]},
     "type": "indicator",
     "mode": "bignumber+delta",
     "valueformat": "asdf",
     "number": {
-      "align": "left",
+      "align": "middle",
       "suffix": "km/h"
     },
     "value": 43,
     "delta": {
+      "position": "left",
+      "reference": 20
+    }
+  }, {
+    "domain": {"x": [0, 0.5], "y": [0.5, 1.0]},
+    "type": "indicator",
+    "mode": "bignumber+delta",
+    "valueformat": "asdf",
+    "number": {
+      "align": "middle",
+      "suffix": "km/h"
+    },
+    "value": 43,
+    "delta": {
+      "position": "bottom",
+      "reference": 20
+    }
+  }, {
+    "domain": {"x": [0.5, 1.0], "y": [0, 0.5]},
+    "type": "indicator",
+    "mode": "bignumber+delta",
+    "valueformat": "asdf",
+    "number": {
+      "align": "middle",
+      "suffix": "km/h"
+    },
+    "value": 43,
+    "delta": {
+      "position": "right",
+      "reference": 20
+    }
+  }, {
+    "domain": {"x": [0.5, 1.0], "y": [0.5, 1.0]},
+    "type": "indicator",
+    "mode": "bignumber+delta",
+    "valueformat": "asdf",
+    "number": {
+      "align": "middle",
+      "suffix": "km/h"
+    },
+    "value": 43,
+    "delta": {
+      "position": "top",
       "reference": 20
     }
   }],
   "layout": {
-    "width": 200,
-    "height": 100,
+    "paper_bgcolor": "orange",
+    "width": 600,
+    "height": 200,
     "margin": {"t": 0, "b": 0, "l": 25, "r": 25}
   }
 }

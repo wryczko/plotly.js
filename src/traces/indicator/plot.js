@@ -96,6 +96,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var isAngular = hasGauge && trace.gauge.shape === 'angular';
         var theta = Math.PI / 2;
         var radius = Math.min(0.85 * size.w / 2, size.h * 0.65 - 20);
+        var gaugePosition;
         var isWide = (size.w / 2 > size.h * 0.65);
         var innerRadius = cn.innerRadius * radius;
         function valueToAngle(v) {
@@ -124,16 +125,18 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         deltaX = centerX;
         titleX = centerX;
 
-        bignumberBaseline = hasGauge && isAngular ? 'bottom' : 'central';
+        // bignumberBaseline = hasGauge && isAngular ? 'bottom' : 'central';
+        bignumberBaseline = 'central';
+        deltaBaseline = 'central';
         titleX = isBullet ? size.l + 0.23 * size.w : centerX;
 
         if(!hasGauge) {
             // when no gauge, we are only constrained by figure size
             bignumberFontSize = Math.min(size.w / (fmt(trace.max).length), size.h / 3);
+            bignumberY = size.t + size.h / 2;
             if(hasBigNumber) {
                 // Center the text vertically
                 deltaFontSize = 0.5 * bignumberFontSize;
-                bignumberY = size.t + size.h / 2;
                 deltaY = Math.min(size.t + size.h / 2 + bignumberFontSize / 2 + deltaFontSize / 2);
                 if(trace.number.align === 'left') {
                     bignumberX = size.l;
@@ -158,12 +161,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 bignumberY = size.t + size.h - (0.15 * size.h);
                 // if(!isWide) bignumberY -= (size.h - radius) / 2;
                 if(!isWide) bignumberY = size.t + size.h / 2;
+                gaugePosition = bignumberY;
                 bignumberFontSize = Math.min(2 * innerRadius / (fmt(trace.max).length));
+                bignumberY -= bignumberFontSize / 2;
                 deltaFontSize = 0.35 * bignumberFontSize;
                 gaugeFontSize = Math.max(0.25 * bignumberFontSize, (radius - innerRadius) / 4);
                 titleFontSize = 0.35 * bignumberFontSize;
                 deltaY = bignumberY + deltaFontSize;
-                if(!hasBigNumber) deltaBaseline = 'bottom';
+                if(!hasBigNumber) deltaY += bignumberFontSize;
                 if(isWide) {
                     titleY = size.t + (0.25 / 2) * size.h - titleFontSize / 2;
                 } else {
@@ -187,6 +192,20 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 deltaFontSize = 0.75 * bignumberFontSize;
                 deltaY = bignumberY;
             }
+        }
+        var deltaDy;
+        deltaX = 0;
+        if(trace.delta.position === 'bottom' && hasBigNumber) {
+            deltaDy = (bignumberFontSize / 2 + deltaFontSize / 2);
+        }
+        if(trace.delta.position === 'top' && hasBigNumber) {
+            deltaDy = -(bignumberFontSize / 2 + deltaFontSize / 2);
+        }
+        if(trace.delta.position === 'right' && hasBigNumber) {
+            deltaX = undefined; deltaDy = undefined;
+        }
+        if(trace.delta.position === 'left' && hasBigNumber) {
+            deltaX = undefined; deltaDy = undefined;
         }
 
         plotGroup.each(function() {
@@ -213,18 +232,40 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 return strTranslate(titleX, titleY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
             });
 
-            // bignumber
-            var data = cd.filter(function() {return hasBigNumber;});
-            var number = d3.select(this).selectAll('text.number').data(data);
-            number.enter().append('text').classed('number', true);
-            number.attr({
-                x: bignumberX,
-                y: bignumberY,
+            // number indicators
+            var g = d3.select(this).selectAll('text.numbers').data(cd);
+            g.enter().append('text').classed('numbers', true);
+            g.attr('transform', strTranslate(bignumberX, bignumberY));
+
+            var data = [];
+            var numberSpec = {
                 'text-anchor': bignumberAnchor,
-                'alignment-baseline': bignumberBaseline
-            })
-            .call(Drawing.font, trace.number.font)
-            .style('font-size', bignumberFontSize);
+                'alignment-baseline': bignumberBaseline,
+                class: 'number'
+            };
+            var deltaSpec = {
+                'text-anchor': deltaAnchor,
+                'alignment-baseline': deltaBaseline,
+                class: 'delta'
+            };
+            if(hasBigNumber) data.push(numberSpec);
+            if(hasDelta) data.push(deltaSpec);
+            if(trace.delta.position === 'left') data.reverse();
+            var sel = g.selectAll('tspan').data(data);
+            sel.enter().append('tspan');
+            sel.exit().remove();
+            sel.attr('text-anchor', function(d) {return d['text-anchor'];});
+            sel.attr('alignment-baseline', function(d) {return d['alignment-baseline'];});
+            sel.attr('class', function(d) { return d.class;});
+
+            // bignumber
+            // var data = cd.filter(function() {return hasBigNumber;});
+            // var number = g.selectAll('tspan.number').data(data);
+            // number.enter().append('tspan').classed('number', true);
+            var number = g.select('tspan.number');
+            number
+              .call(Drawing.font, trace.number.font)
+              .style('font-size', bignumberFontSize);
 
             if(hasTransition) {
                 number
@@ -243,21 +284,23 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             } else {
                 number.text(fmt(cd[0].y) + bignumberSuffix);
             }
-            number.exit().remove();
+            // number.exit().remove();
+
+            number.attr('x', undefined);
+            number.attr('dy', undefined);
 
             // delta
-            data = cd.filter(function() {return hasDelta;});
-            var delta = d3.select(this).selectAll('text.delta').data(data);
-            delta.enter().append('text').classed('delta', true);
-            delta.attr({
-                x: deltaX,
-                y: deltaY,
-                'text-anchor': deltaAnchor,
-                'alignment-baseline': deltaBaseline || 'central'
-            })
-            .call(Drawing.font, trace.delta.font)
-            .style('font-size', deltaFontSize)
-            .style('fill', deltaFill);
+            // data = cd.filter(function() {return hasDelta;});
+            // var delta = g.selectAll('tspan.delta').data(data);
+            // delta.enter().append('tspan').classed('delta', true);
+            var delta = g.select('tspan.delta');
+            delta
+              .call(Drawing.font, trace.delta.font)
+              .style('font-size', deltaFontSize)
+              .style('fill', deltaFill);
+
+            delta.attr('x', deltaX);
+            delta.attr('dy', deltaDy);
 
             if(hasTransition) {
                 delta
@@ -280,13 +323,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                     return deltaFormatText(deltaValue(d));
                 });
             }
-            delta.exit().remove();
+            // delta.exit().remove();
 
             // Draw circular gauge
             data = cd.filter(function() {return isAngular;});
             var gauge = d3.select(this).selectAll('g.gauge').data(data);
             gauge.enter().append('g').classed('gauge', true);
-            gauge.attr('transform', strTranslate(centerX, bignumberY));
+            gauge.exit().remove();
+            gauge.attr('transform', strTranslate(centerX, gaugePosition));
 
             // Draw gauge's min and max in text
             var minText = gauge.selectAll('text.min').data(cd);
@@ -364,9 +408,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 return -0.5 * (1 + Math.sin(rad)) * h;
             };
 
-            var shift = bulletHeight;
+            var shift;
             var _transFn = function(rad) {
-                return strTranslate(centerX + radius * Math.cos(rad), bignumberY - radius * Math.sin(rad));
+                return strTranslate(centerX + radius * Math.cos(rad), gaugePosition - radius * Math.sin(rad));
             };
             var transFn = function(d) {
                 return _transFn(t2g(d));
@@ -376,10 +420,11 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 return _transFn(rad) + strRotate(-rad2deg(rad));
             };
 
-            var axLayer = d3.select(this).selectAll('g.gaugeaxis').data(data);
+            var axLayer = d3.select(this).selectAll('g.angularaxis').data(data);
             axLayer.enter().append('g')
-              .classed('gaugeaxis', true)
+              .classed('angularaxis', true)
               .classed('crisp', true);
+            axLayer.exit().remove();
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
 
             var vals = Axes.calcTicks(ax);
@@ -490,9 +535,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             // var g = d3.select(this);
             // var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
-            axLayer = d3.select(this).selectAll('g.gaugeaxis').data(data);
+            axLayer = d3.select(this).selectAll('g.bulletaxis').data(data);
             axLayer.enter().append('g')
-              .classed('gaugeaxis', true)
+              .classed('bulletaxis', true)
               .classed('crisp', true);
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
             axLayer.exit().remove();

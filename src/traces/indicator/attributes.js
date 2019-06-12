@@ -195,6 +195,15 @@ module.exports = {
                 'Sets the reference value to compute the delta.'
             ].join(' ')
         },
+        position: {
+            valType: 'enumerated',
+            values: ['top', 'bottom', 'left', 'right'],
+            dflt: 'bottom',
+            editType: 'plot',
+            description: [
+                'Sets the position of delta with respect to the number.'
+            ].join(' ')
+        },
         showpercentage: {
             valType: 'boolean',
             editType: 'style',

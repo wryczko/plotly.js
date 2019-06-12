@@ -103,6 +103,7 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     coerce('delta.increasing.color');
     coerce('delta.decreasing.symbol');
     coerce('delta.decreasing.color');
+    coerce('delta.position');
 }
 
 function stepDefaults(valueIn, valueOut) {
