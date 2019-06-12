@@ -16,6 +16,8 @@ module.exports = {
         decreasing: '▼'
     },
     bulletHeight: 35,
+    bulletTitleSize: 0.25,
+    bulletPadding: 0.025,
     innerRadius: 0.75,
     valueHeight: 0.5 // thickness of value bars relative to full thickness
 };

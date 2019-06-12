@@ -128,13 +128,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var deltaAnchor = anchor[trace.number.align];
         var titleX, titleY, titleFontSize;
 
-        var gaugeFontSize;
+        // var gaugeFontSize;
 
-        // Center everything
         var centerX = size.l + size.w / 2;
-        bignumberX = centerX;
-        deltaX = centerX;
-        titleX = centerX;
+        bignumberX = size.l + position[trace.number.align] * size.w;
 
         // bignumberBaseline = hasGauge && isAngular ? 'bottom' : 'central';
         bignumberBaseline = 'central';
@@ -150,12 +147,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             bignumberY = size.t + size.h / 2;
             if(hasBigNumber) {
                 deltaFontSize = 0.5 * bignumberFontSize;
-                bignumberX = size.l + position[trace.number.align] * size.w;
-                deltaX = bignumberX;
-                bignumberAnchor = deltaAnchor = anchor[trace.number.align];
             } else {
                 deltaFontSize = bignumberFontSize;
             }
+            bignumberAnchor = deltaAnchor = anchor[trace.number.align];
             titleFontSize = 0.35 * bignumberFontSize;
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
         } else {
@@ -169,7 +164,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 bignumberFontSize = Math.min(2 * innerRadius / (fmt(trace.max).length));
                 bignumberY -= bignumberFontSize / 2;
                 deltaFontSize = 0.35 * bignumberFontSize;
-                gaugeFontSize = Math.max(0.25 * bignumberFontSize, (radius - innerRadius) / 4);
+                // gaugeFontSize = Math.max(0.25 * bignumberFontSize, (radius - innerRadius) / 4);
                 titleFontSize = 0.35 * bignumberFontSize;
                 if(isWide) {
                     titleY = size.t + (0.25 / 2) * size.h - titleFontSize / 2;
@@ -178,16 +173,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 }
             }
             if(isBullet) {
-                // Center the text
-                var padding = 0.025;
-                var p = 0.75 + padding;
-                numbersMaxWidth = (0.25 - padding) * size.w;
+                var padding = cn.bulletPadding;
+                var p = (1 - cn.bulletTitleSize) + padding;
+                numbersMaxWidth = (cn.bulletTitleSize - padding) * size.w;
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 bignumberY = size.t + size.h / 2;
 
-                titleX = size.l + (0.25 - padding) * size.w * position[trace.title.align];
+                titleX = size.l + (cn.bulletTitleSize - padding) * size.w * position[trace.title.align];
                 bignumberX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
-                deltaX = bignumberX;
                 deltaFontSize = 0.5 * bignumberFontSize;
                 titleFontSize = 0.4 * bignumberFontSize;
                 titleY = bignumberY;
@@ -226,10 +219,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             .text(trace.title.text)
             .call(Drawing.font, trace.title.font)
             .style('font-size', titleFontSize)
-            .call(svgTextUtils.convertToTspans, gd);
-            title.exit().remove();
-
-            title.attr('transform', function() {
+            .call(svgTextUtils.convertToTspans, gd)
+            .attr('transform', function() {
                 var scaleRatio;
                 if(isBullet) {
                     scaleRatio = fitTextInside(title, 0.225 * size.w, size.h);
@@ -238,10 +229,11 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 }
                 return strTranslate(titleX, titleY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
             });
+            title.exit().remove();
 
             // number indicators
-            var g = d3.select(this).selectAll('text.numbers').data(cd);
-            g.enter().append('text').classed('numbers', true);
+            var numbers = d3.select(this).selectAll('text.numbers').data(cd);
+            numbers.enter().append('text').classed('numbers', true);
 
             var data = [];
             var numberSpec = {
@@ -257,26 +249,35 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(hasBigNumber) data.push(numberSpec);
             if(hasDelta) data.push(deltaSpec);
             if(trace.delta.position === 'left') data.reverse();
-            var sel = g.selectAll('tspan').data(data);
+            var sel = numbers.selectAll('tspan').data(data);
             sel.enter().append('tspan');
+            sel
+              .attr('text-anchor', function(d) {return d['text-anchor'];})
+              .attr('alignment-baseline', function(d) {return d['alignment-baseline'];})
+              .attr('class', function(d) { return d.class;})
+              .attr('dx', function(d, i) {
+                  var pos = trace.delta.position;
+                  if(i === 1 && (pos === 'left' || pos === 'right')) return 10;
+                  return undefined;
+              });
             sel.exit().remove();
-            sel.attr('text-anchor', function(d) {return d['text-anchor'];});
-            sel.attr('alignment-baseline', function(d) {return d['alignment-baseline'];});
-            sel.attr('class', function(d) { return d.class;});
-            sel.attr('dx', function(d, i) {
-                var pos = trace.delta.position;
-                if(i === 1 && pos === 'left' || pos === 'right') return 10;
-                return undefined;
-            });
 
             // bignumber
-            // var data = cd.filter(function() {return hasBigNumber;});
-            // var number = g.selectAll('tspan.number').data(data);
-            // number.enter().append('tspan').classed('number', true);
-            var number = g.select('tspan.number');
+            var number = numbers.select('tspan.number');
             number
               .call(Drawing.font, trace.number.font)
-              .style('font-size', bignumberFontSize);
+              .style('font-size', bignumberFontSize)
+              .attr('x', undefined)
+              .attr('dy', undefined);
+
+            // delta
+            var delta = numbers.select('tspan.delta');
+            delta
+              .call(Drawing.font, trace.delta.font)
+              .style('font-size', deltaFontSize)
+              .style('fill', deltaFill)
+              .attr('x', deltaX)
+              .attr('dy', deltaDy);
 
             if(hasTransition) {
                 number
@@ -295,23 +296,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             } else {
                 number.text(fmt(cd[0].y) + bignumberSuffix);
             }
-            // number.exit().remove();
-
-            number.attr('x', undefined);
-            number.attr('dy', undefined);
-
-            // delta
-            // data = cd.filter(function() {return hasDelta;});
-            // var delta = g.selectAll('tspan.delta').data(data);
-            // delta.enter().append('tspan').classed('delta', true);
-            var delta = g.select('tspan.delta');
-            delta
-              .call(Drawing.font, trace.delta.font)
-              .style('font-size', deltaFontSize)
-              .style('fill', deltaFill);
-
-            delta.attr('x', deltaX);
-            delta.attr('dy', deltaDy);
 
             if(hasTransition) {
                 delta
@@ -334,12 +318,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                     return deltaFormatText(deltaValue(d));
                 });
             }
-            // delta.exit().remove();
 
-            g.attr('transform', function() {
-                var scaleRatio;
-                scaleRatio = fitTextInside(g, numbersMaxWidth, numbersMaxHeight);
-                console.log(scaleRatio);
+            // Resize numbers to fit
+            numbers.attr('transform', function() {
+                var scaleRatio = fitTextInside(numbers, numbersMaxWidth, numbersMaxHeight);
                 return strTranslate(bignumberX, bignumberY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
             });
 
@@ -351,29 +333,29 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             gauge.attr('transform', strTranslate(centerX, gaugePosition));
 
             // Draw gauge's min and max in text
-            var minText = gauge.selectAll('text.min').data(cd);
-            minText.enter().append('text').classed('min', true);
-            minText
-                  .call(Drawing.font, trace.number.font)
-                  .style('font-size', gaugeFontSize)
-                  .attr({
-                      x: - (innerRadius + radius) / 2,
-                      y: gaugeFontSize,
-                      'text-anchor': 'middle'
-                  })
-                  .text(fmt(trace.min));
-
-            var maxText = gauge.selectAll('text.max').data(cd);
-            maxText.enter().append('text').classed('max', true);
-            maxText
-                  .call(Drawing.font, trace.number.font)
-                  .style('font-size', gaugeFontSize)
-                  .attr({
-                      x: (innerRadius + radius) / 2,
-                      y: gaugeFontSize,
-                      'text-anchor': 'middle'
-                  })
-                  .text(fmt(trace.max));
+            // var minText = gauge.selectAll('text.min').data(cd);
+            // minText.enter().append('text').classed('min', true);
+            // minText
+            //       .call(Drawing.font, trace.number.font)
+            //       .style('font-size', gaugeFontSize)
+            //       .attr({
+            //           x: - (innerRadius + radius) / 2,
+            //           y: gaugeFontSize,
+            //           'text-anchor': 'middle'
+            //       })
+            //       .text(fmt(trace.min));
+            //
+            // var maxText = gauge.selectAll('text.max').data(cd);
+            // maxText.enter().append('text').classed('max', true);
+            // maxText
+            //       .call(Drawing.font, trace.number.font)
+            //       .style('font-size', gaugeFontSize)
+            //       .attr({
+            //           x: (innerRadius + radius) / 2,
+            //           y: gaugeFontSize,
+            //           'text-anchor': 'middle'
+            //       })
+            //       .text(fmt(trace.max));
 
             function arcPathGenerator(size) {
                 return d3.svg.arc()
@@ -387,9 +369,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var ax = mockAxis(gd, opts);
             ax.type = 'indicator';
             ax.range = [trace.min, trace.max];
+            ax._id = 'angularaxis';
             ax.direction = 'clockwise';
             ax.rotation = 180;
-            ax._id = 'angularaxis';
             setConvertPolar(ax, {sector: [0, 180]}, fullLayout);
             ax.setGeometry();
             ax.setScale();
@@ -493,6 +475,19 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                   .style('stroke-width', function(d) { return d.line.width;});
             targetArc.exit().remove();
 
+            // TODO: threshold reuse arc path with very small range
+            data = cd.filter(function() {return trace.gauge.threshold.value;});
+            var threshold = gauge.selectAll('g.threshold').data(data);
+            threshold.enter().append('g').classed('threshold', true).append('line');
+            threshold.select('line')
+                .attr('x1', Math.sin(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
+                .attr('x2', Math.sin(valueToAngle(trace.gauge.threshold.value)) * radius)
+                .attr('y1', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
+                .attr('y2', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * radius)
+                .style('stroke', trace.gauge.threshold.color)
+                .style('stroke-width', trace.gauge.threshold.width);
+            threshold.exit().remove();
+
             // Draw foreground with transition
             var valueArcPath = arcPathGenerator(trace.gauge.value.size);
             var fgArc = gauge.selectAll('g.fgArc').data(cd);
@@ -517,23 +512,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                   .style('stroke-width', trace.gauge.value.line.width);
             fgArc.exit().remove();
 
-            // TODO: threshold reuse arc path with very small range
-            // TODO: add hover on threshold
-            data = cd.filter(function() {return trace.gauge.threshold.value;});
-            var threshold = gauge.selectAll('g.threshold').data(data);
-            threshold.enter().append('g').classed('threshold', true).append('line');
-            threshold.select('line')
-                .attr('x1', Math.sin(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
-                .attr('x2', Math.sin(valueToAngle(trace.gauge.threshold.value)) * radius)
-                .attr('y1', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
-                .attr('y2', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * radius)
-                .style('stroke', trace.gauge.threshold.color)
-                .style('stroke-width', trace.gauge.threshold.width);
-            threshold.exit().remove();
-
             // Draw bullet
-            var bulletLeft = hasTitle ? 0.25 : 0;
-            var bulletRight = (hasBigNumber || hasDelta) ? 0.75 : 1.0;
+            var bulletLeft = hasTitle ? cn.bulletTitleSize : 0;
+            var bulletRight = (hasBigNumber || hasDelta) ? (1 - cn.bulletTitleSize) : 1.0;
 
             data = cd.filter(function() {return isBullet;});
             var innerBulletHeight = trace.gauge.value.size * bulletHeight;
