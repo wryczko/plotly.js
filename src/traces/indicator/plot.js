@@ -66,6 +66,17 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         // title
         var hasTitle = trace.title.text;
+        var anchor = {
+            'left': 'start',
+            'center': 'middle',
+            'right': 'end'
+        };
+        var position = {
+            'left': 0,
+            'center': 0.5,
+            'right': 1
+        };
+        var titleAnchor = anchor[trace.title.align];
 
         // bignumber
         var hasBigNumber = trace.mode.indexOf('bignumber') !== -1;
@@ -112,9 +123,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         // Position elements
         var bignumberX, bignumberY, bignumberFontSize, bignumberBaseline;
-        var bignumberAnchor = 'middle';
+        var bignumberAnchor = anchor[trace.number.align];
         var deltaX, deltaFontSize, deltaBaseline;
-        var deltaAnchor = 'middle';
+        var deltaAnchor = anchor[trace.number.align];
         var titleX, titleY, titleFontSize;
 
         var gaugeFontSize;
@@ -128,7 +139,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         // bignumberBaseline = hasGauge && isAngular ? 'bottom' : 'central';
         bignumberBaseline = 'central';
         deltaBaseline = 'central';
-        titleX = isBullet ? size.l + 0.23 * size.w : centerX;
+        titleX = size.l + size.w * position[trace.title.align];
 
         var numbersMaxWidth = 0.85 * size.w;
         var numbersMaxHeight = size.h;
@@ -138,20 +149,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             bignumberFontSize = Math.min(size.w / (fmt(trace.max).length), size.h / 3);
             bignumberY = size.t + size.h / 2;
             if(hasBigNumber) {
-                // Center the text vertically
                 deltaFontSize = 0.5 * bignumberFontSize;
-                if(trace.number.align === 'left') {
-                    bignumberX = size.l;
-                    deltaX = bignumberX;
-                    bignumberAnchor = 'start';
-                    deltaAnchor = 'start';
-                }
-                if(trace.number.align === 'right') {
-                    bignumberX = size.l + size.w;
-                    deltaX = bignumberX;
-                    bignumberAnchor = 'end';
-                    deltaAnchor = 'end';
-                }
+                bignumberX = size.l + position[trace.number.align] * size.w;
+                deltaX = bignumberX;
+                bignumberAnchor = deltaAnchor = anchor[trace.number.align];
             } else {
                 deltaFontSize = bignumberFontSize;
             }
@@ -159,8 +160,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
         } else {
             if(isAngular) {
-                numbersMaxWidth = 2 * innerRadius;
-                numbersMaxHeight = innerRadius;
+                numbersMaxWidth = 2 * innerRadius * 0.85;
+                numbersMaxHeight = innerRadius * 0.85;
                 bignumberY = size.t + size.h - (0.15 * size.h);
                 // if(!isWide) bignumberY -= (size.h - radius) / 2;
                 if(!isWide) bignumberY = size.t + size.h / 2;
@@ -178,11 +179,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             }
             if(isBullet) {
                 // Center the text
-                var p = 0.75;
-                numbersMaxWidth = 0.25 * size.w;
+                var padding = 0.025;
+                var p = 0.75 + padding;
+                numbersMaxWidth = (0.25 - padding) * size.w;
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 bignumberY = size.t + size.h / 2;
-                bignumberX = size.l + (p + (1 - p) / 2) * size.w;
+
+                titleX = size.l + (0.25 - padding) * size.w * position[trace.title.align];
+                bignumberX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
                 deltaX = bignumberX;
                 deltaFontSize = 0.5 * bignumberFontSize;
                 titleFontSize = 0.4 * bignumberFontSize;
@@ -216,7 +220,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var title = d3.select(this).selectAll('text.title').data(cd);
             title.enter().append('text').classed('title', true);
             title.attr({
-                'text-anchor': isBullet ? 'end' : 'middle',
+                'text-anchor': titleAnchor,
                 'alignment-baseline': 'central'
             })
             .text(trace.title.text)
@@ -238,7 +242,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             // number indicators
             var g = d3.select(this).selectAll('text.numbers').data(cd);
             g.enter().append('text').classed('numbers', true);
-            g.attr('transform', strTranslate(bignumberX, bignumberY));
 
             var data = [];
             var numberSpec = {
@@ -336,6 +339,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             g.attr('transform', function() {
                 var scaleRatio;
                 scaleRatio = fitTextInside(g, numbersMaxWidth, numbersMaxHeight);
+                console.log(scaleRatio);
                 return strTranslate(bignumberX, bignumberY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
             });
 

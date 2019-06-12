@@ -155,6 +155,17 @@ module.exports = {
                 'Sets the title of this indicator.'
             ].join(' ')
         },
+        align: {
+            valType: 'enumerated',
+            values: ['left', 'center', 'right'],
+            role: 'plot',
+            editType: 'plot',
+            description: [
+                'Sets the horizontal alignment of the title.',
+                'It defaults to `center` except for bullet charts',
+                'for which it defaults to right.'
+            ].join(' ')
+        },
         font: extendFlat({}, textFontAttrs, {
             description: [
                 'Set the font used to display the title'
@@ -172,8 +183,8 @@ module.exports = {
             valType: 'enumerated',
             values: ['left', 'center', 'right'],
             dflt: 'center',
-            role: 'style',
-            editType: 'style',
+            role: 'plot',
+            editType: 'plot',
             description: [
                 'Sets the horizontal alignment of the `text` within the box.'
             ].join(' ')

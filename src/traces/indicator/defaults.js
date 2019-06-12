@@ -52,6 +52,9 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     }
     coerceGauge('shape');
 
+    var isBullet = traceOut.mode.indexOf('gauge') !== -1 && traceOut.gauge.shape === 'bullet';
+    coerce('title.align', isBullet ? 'right' : 'center');
+
     // gauge background
     coerceGauge('bgcolor');
     coerceGauge('borderwidth');
