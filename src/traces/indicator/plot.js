@@ -448,26 +448,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 size: 1
             };
 
-            // TODO: threshold reuse arc path with very small range
-            // data = cd.filter(function() {return trace.gauge.threshold.value;});
-            // var threshold = gauge.selectAll('g.threshold').data(data);
-            // threshold.enter().append('g').classed('threshold', true).append('line');
-            // threshold.select('line')
-            //     .attr('x1', Math.sin(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
-            //     .attr('x2', Math.sin(valueToAngle(trace.gauge.threshold.value)) * radius)
-            //     .attr('y1', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * innerRadius)
-            //     .attr('y2', -Math.cos(valueToAngle(trace.gauge.threshold.value)) * radius)
-            //     .style('stroke', trace.gauge.threshold.color)
-            //     .style('stroke-width', trace.gauge.threshold.width);
-            // threshold.exit().remove();
-
+            // Reexpress threshold for drawing
             var v = trace.gauge.threshold.value;
             var threshold = {
-                range: [v - trace.gauge.threshold.width / 2, v + trace.gauge.threshold.width / 2],
+                range: [v, v],
                 color: trace.gauge.threshold.color,
                 line: {
                     color: trace.gauge.threshold.color,
-                    width: 1
+                    width: trace.gauge.threshold.width
                 },
                 size: trace.gauge.threshold.height
             };
