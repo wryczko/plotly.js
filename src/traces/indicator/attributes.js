@@ -150,6 +150,7 @@ module.exports = {
         text: {
             valType: 'string',
             role: 'info',
+            editType: 'plot',
             description: [
                 'Sets the title of this indicator.'
             ].join(' ')
@@ -159,7 +160,7 @@ module.exports = {
                 'Set the font used to display the title'
             ].join(' ')
         }),
-        editType: 'ticks'
+        editType: 'plot'
     },
     number: {
         font: extendFlat({}, textFontAttrs, {
@@ -185,11 +186,13 @@ module.exports = {
             description: [
                 'Sets a suffix appearing next to the number.'
             ].join(' ')
-        }
+        },
+        editType: 'plot'
     },
     delta: {
         reference: {
             valType: 'number',
+            role: 'info',
             editType: 'calc',
             description: [
                 'Sets the reference value to compute the delta.'
@@ -198,6 +201,7 @@ module.exports = {
         position: {
             valType: 'enumerated',
             values: ['top', 'bottom', 'left', 'right'],
+            role: 'style',
             dflt: 'bottom',
             editType: 'plot',
             description: [
@@ -276,7 +280,7 @@ module.exports = {
         shape: {
             valType: 'enumerated',
             editType: 'plot',
-            role: 'plot',
+            role: 'style',
             dflt: 'angular',
             values: ['angular', 'bullet'],
             description: [
@@ -293,14 +297,14 @@ module.exports = {
         bgcolor: {
             valType: 'color',
             role: 'style',
-            editType: 'legend',
+            editType: 'plot',
             description: 'Sets the gauge background color.'
         },
         bordercolor: {
             valType: 'color',
             dflt: colorAttrs.defaultLine,
             role: 'style',
-            editType: 'legend',
+            editType: 'plot',
             description: 'Sets the color of the border enclosing the gauge.'
         },
         borderwidth: {
@@ -308,7 +312,7 @@ module.exports = {
             min: 0,
             dflt: 0,
             role: 'style',
-            editType: 'legend',
+            editType: 'plot',
             description: 'Sets the width (in px) of the border enclosing the gauge.'
         },
         axis: {
