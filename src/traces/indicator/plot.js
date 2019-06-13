@@ -438,9 +438,19 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             }
 
             // Reexpress our background attributes for drawing
-            var bg = {
+            var gaugeBg = {
                 range: [trace.min, trace.max],
                 color: trace.gauge.bgcolor,
+                line: {
+                    color: trace.gauge.bordercolor,
+                    width: 0
+                },
+                height: 1
+            };
+
+            var gaugeOutline = {
+                range: [trace.min, trace.max],
+                color: 'rgba(0, 0, 0, 0)',
                 line: {
                     color: trace.gauge.bordercolor,
                     width: trace.gauge.borderwidth
@@ -450,7 +460,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             // Reexpress threshold for drawing
             var v = trace.gauge.threshold.value;
-            var threshold = {
+            var thresholdArc = {
                 range: [v, v],
                 color: trace.gauge.threshold.color,
                 line: {
@@ -460,23 +470,33 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 height: trace.gauge.threshold.height
             };
 
+            function drawArc(p) {
+                p
+                    .attr('d', function(d) {
+                        return arcPathGenerator(d.height)
+                          .startAngle(valueToAngle(d.range[0]))
+                          .endAngle(valueToAngle(d.range[1]))();
+                    });
+            }
+
+            function styleArc(p) {
+                p
+                    .style('fill', function(d) { return d.color;})
+                    .style('stroke', function(d) { return d.line.color;})
+                    .style('stroke-width', function(d) { return d.line.width;});
+            }
+
             // Draw background + steps
-            var targetArc = gauge.selectAll('g.targetArc').data([bg].concat(trace.gauge.steps).concat(threshold));
+            var arcs = [gaugeBg].concat(trace.gauge.steps);
+            if(v) arcs.push(thresholdArc);
+            var targetArc = gauge.selectAll('g.targetArc').data(arcs);
             targetArc.enter().append('g').classed('targetArc', true).append('path');
-            targetArc.select('path')
-                  .attr('d', function(d) {
-                      return arcPathGenerator(d.height)
-                        .startAngle(valueToAngle(d.range[0]))
-                        .endAngle(valueToAngle(d.range[1]))();
-                  })
-                  .style('fill', function(d) { return d.color;})
-                  .style('stroke', function(d) { return d.line.color;})
-                  .style('stroke-width', function(d) { return d.line.width;});
+            targetArc.select('path').call(drawArc).call(styleArc);
             targetArc.exit().remove();
 
             // Draw foreground with transition
             var valueArcPath = arcPathGenerator(trace.gauge.value.height);
-            var fgArc = gauge.selectAll('g.fgArc').data(cd);
+            var fgArc = gauge.selectAll('g.fgArc').data([trace.gauge.value]);
             fgArc.enter().append('g').classed('fgArc', true).append('path');
 
             var fgArcPath = fgArc.select('path');
@@ -492,11 +512,13 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 fgArcPath
                       .attr('d', valueArcPath.endAngle(valueToAngle(cd[0].y)));
             }
-            fgArcPath
-                  .style('fill', trace.gauge.value.color)
-                  .style('stroke', trace.gauge.value.line.color)
-                  .style('stroke-width', trace.gauge.value.line.width);
+            fgArcPath.call(styleArc);
             fgArc.exit().remove();
+
+            var gaugeBorder = gauge.selectAll('g.gaugeOutline').data([gaugeOutline]);
+            gaugeBorder.enter().append('g').classed('gaugeOutline', true).append('path');
+            gaugeBorder.select('path').call(drawArc).call(styleArc);
+            gaugeBorder.exit().remove();
 
             // Draw bullet
             var bulletLeft = hasTitle ? cn.bulletTitleSize : 0;
@@ -550,7 +572,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             }
 
             // Draw bullet background and steps
-            var targetBullet = bullet.selectAll('g.targetBullet').data([bg].concat(trace.gauge.steps));
+            var targetBullet = bullet.selectAll('g.targetBullet').data([gaugeBg].concat(trace.gauge.steps));
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
             targetBullet.select('rect')
                   .attr('width', function(d) { return Math.max(0, ax.c2p(d.range[1] - d.range[0]));})
@@ -585,7 +607,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             fgBullet.exit().remove();
 
             data = cd.filter(function() {return trace.gauge.threshold.value;});
-            threshold = bullet.selectAll('g.threshold').data(data);
+            var threshold = bullet.selectAll('g.threshold').data(data);
             threshold.enter().append('g').classed('threshold', true).append('line');
             threshold.select('line')
                 .attr('x1', ax.c2p(trace.gauge.threshold.value))
@@ -595,6 +617,17 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 .style('stroke', trace.gauge.threshold.color)
                 .style('stroke-width', trace.gauge.threshold.width);
             threshold.exit().remove();
+
+            var bulletOutline = bullet.selectAll('g.bulletOutline').data([gaugeOutline]);
+            bulletOutline.enter().append('g').classed('bulletOutline', true).append('rect');
+            bulletOutline.select('rect')
+                  .attr('width', function(d) { return Math.max(0, ax.c2p(d.range[1] - d.range[0]));})
+                  .attr('x', function(d) { return ax.c2p(d.range[0]);})
+                  .attr('height', bulletHeight)
+                  .style('fill', function(d) { return d.color;})
+                  .style('stroke', function(d) { return d.line.color;})
+                  .style('stroke-width', function(d) { return d.line.width;});
+            bulletOutline.exit().remove();
         });
     });
 };
