@@ -44,16 +44,17 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     coerce('title.text');
     // Lib.coerceFont(coerce, 'font', layout.font);
 
-    // gauge attributes
+    // Gauge attributes
     var gaugeIn = traceIn.gauge;
     var gaugeOut = Template.newContainer(traceOut, 'gauge');
     function coerceGauge(attr, dflt) {
         return Lib.coerce(gaugeIn, gaugeOut, attributes.gauge, attr, dflt);
     }
     coerceGauge('shape');
-
     var isBullet = traceOut.mode.indexOf('gauge') !== -1 && traceOut.gauge.shape === 'bullet';
-    coerce('title.align', isBullet ? 'right' : 'center');
+    if(!isBullet) {
+        coerce('title.align', 'center');
+    }
 
     // gauge background
     coerceGauge('bgcolor');
@@ -92,7 +93,8 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     }
     handleTickValueDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear');
 
-    var opts = {outerTicks: false, font: layout.font, nticks: 11};
+    var opts = {outerTicks: false, font: layout.font};
+    // opts.tickSuffixDflt = traceOut.number.suffix;
     handleTickLabelDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
     handleTickMarkDefaults(axisIn, axisOut, coerceGaugeAxis, 'linear', opts);
 

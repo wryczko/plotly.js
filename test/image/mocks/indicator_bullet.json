@@ -6,8 +6,12 @@
     },
     "title": {"text": "<b>Revenue</b><br><span style='color: gray; font-size:0.8em'>U.S. $ (1,000s)</span>"},
     "type": "indicator",
-    "mode": "bignumber+gauge",
+    "mode": "bignumber+gauge+delta",
     "max": 300,
+    "delta": {"reference": 200, "position": "right"},
+    "number": {
+      "suffix": "km/h"
+    },
     "gauge": {
       "shape": "bullet",
       "threshold": {
@@ -38,8 +42,9 @@
     },
     "title": {"text": "<b>Profit</b><br><span style='color: gray; font-size:0.8em'>%</span>"},
     "type": "indicator",
-    "mode": "bignumber+gauge",
+    "mode": "bignumber+gauge+delta",
     "max": 100,
+    "delta": {"reference": 200, "position": "left"},
     "target": 75,
     "gauge": {
       "shape": "bullet",
@@ -72,8 +77,9 @@
     },
     "title": {"text" :"<b>Avg Order Size</b><br><span style='color: gray; font-size:0.8em'>U.S. $</span>"},
     "type": "indicator",
-    "mode": "bignumber+gauge",
+    "mode": "bignumber+gauge+delta",
     "max": 300,
+    "delta": {"reference": 200, "position": "top"},
     "gauge": {
       "shape": "bullet",
       "threshold": {

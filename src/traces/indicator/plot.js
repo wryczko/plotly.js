@@ -76,7 +76,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         });
 
         // title
-        var titleAnchor = anchor[trace.title.align];
+        var titleAnchor = isBullet ? anchor.right : anchor[trace.title.align];
 
         // bignumber
         var fmt = d3.format(trace.valueformat);
@@ -166,10 +166,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 numbersY = size.t + size.h / 2;
 
                 titleX = size.l - padding * size.w;
+                titleY = numbersY;
                 numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
                 deltaFontSize = 0.5 * bignumberFontSize;
                 titleFontSize = 0.4 * bignumberFontSize;
-                titleY = numbersY;
             }
 
             if(!hasBigNumber) {
@@ -518,11 +518,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             data = cd.filter(function() {return isBullet;});
             var innerBulletHeight = trace.gauge.value.height * bulletHeight;
-            var bulletVerticalMargin = numbersY - bulletHeight / 2;
             var bullet = d3.select(this).selectAll('g.bullet').data(data);
             bullet.enter().append('g').classed('bullet', true);
             bullet.exit().remove();
-            bullet.attr('transform', 'translate(' + size.l + ', ' + bulletVerticalMargin + ')');
+            bullet.attr('transform', 'translate(' + size.l + ', ' + size.t + ')');
 
             // Draw cartesian axis
             // force full redraw of labels and ticks
@@ -540,7 +539,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
             axLayer.exit().remove();
 
-            shift = bulletHeight + bulletVerticalMargin;
+            shift = size.t + size.h;
 
             vals = Axes.calcTicks(ax);
             transFn = Axes.makeTransFn(ax);
