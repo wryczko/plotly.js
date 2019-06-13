@@ -79,12 +79,12 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var titleAnchor = isBullet ? anchor.right : anchor[trace.title.align];
 
         // bignumber
-        var fmt = d3.format(trace.valueformat);
+        var fmt = d3.format(trace.valueformat); // TODO: replace with Axes.ticktext
         var bignumberSuffix = trace.number.suffix;
         if(bignumberSuffix) bignumberSuffix = ' ' + bignumberSuffix;
 
         // delta
-        var deltaFmt = d3.format(trace.delta.valueformat);
+        var deltaFmt = d3.format(trace.delta.valueformat); // TODO: replace with Axes.ticktext
         if(!trace._deltaLastValue) trace._deltaLastValue = 0;
         var deltaValue = function(d) {
             var value = trace.delta.showpercentage ? d.relativeDelta : d.delta;
@@ -536,6 +536,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             ax.domain = [bulletLeft, bulletRight];
             ax.setScale(false, size);
 
+            vals = Axes.calcTicks(ax);
+            transFn = Axes.makeTransFn(ax);
+            tickSign = Axes.getTickSigns(ax)[2];
+
             // var g = d3.select(this);
             // var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
             axLayer = d3.select(this).selectAll('g.bulletaxis').data(data);
@@ -546,11 +550,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             axLayer.exit().remove();
 
             shift = size.t + size.h;
-
-            vals = Axes.calcTicks(ax);
-            transFn = Axes.makeTransFn(ax);
-            tickSign = Axes.getTickSigns(ax)[2];
-
             if(ax.visible) {
                 Axes.drawTicks(gd, ax, {
                     vals: ax.ticks === 'inside' ? Axes.clipEnds(ax, vals) : vals,
