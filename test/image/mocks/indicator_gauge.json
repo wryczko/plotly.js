@@ -7,7 +7,7 @@
     "value": 450,
     "title": {"text": "Speed"},
     "type": "indicator",
-    "mode": "gauge+bignumber+delta",
+    "mode": "gauge+bignumber",
     "ticker": {
       "showticker": true
     },
@@ -156,7 +156,7 @@
       "showticker": true
     },
     "max": 500,
-    "delta": {"reference": 400},
+    "delta": {"reference": 400, "position": "top"},
     "gauge": {
       "axis": {
         "tickwidth": 1,

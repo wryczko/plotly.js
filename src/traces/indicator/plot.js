@@ -100,10 +100,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         // circular gauge
         var theta = Math.PI / 2;
-        var radius = Math.min(0.85 * size.w / 2, size.h * 0.65 - 20);
+        var radius = Math.min(size.w / 2, size.h);
         var innerRadius = cn.innerRadius * radius;
         var gaugePosition = [0, 0];
-        var isWide = (size.w / 2 > size.h * 0.65 - 20);
+        var isWide = (size.w / 2) > size.h;
         function valueToAngle(v) {
             var angle = (v - trace.min) / (trace.max - trace.min) * Math.PI - theta;
             if(angle < -theta) return -theta;
@@ -116,7 +116,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         // Position elements
         var titleX, titleY, titleFontSize, textBaseline;
-        var numbersX, numbersY, numbersMaxWidth, numbersMaxHeight;
+        var numbersX, numbersY, numbersScaler;
         var bignumberFontSize;
         var bignumberAnchor = anchor[trace.number.align];
         var deltaFontSize;
@@ -126,8 +126,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         titleX = size.l + size.w * position[trace.title.align];
         textBaseline = 'central';
 
-        numbersMaxWidth = 0.85 * size.w;
-        numbersMaxHeight = size.h;
         numbersY = size.t + size.h / 2;
 
         if(!hasGauge) {
@@ -141,17 +139,24 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             }
             titleFontSize = 0.35 * bignumberFontSize;
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
+
+            numbersScaler = function(el) {
+                return fitTextInsideBox(el, 0.85 * size.w, size.h);
+            };
         } else {
             if(isAngular) {
                 numbersX = centerX - 0.85 * innerRadius + 2 * 0.85 * innerRadius * position[trace.number.align];
-                numbersMaxWidth = 2 * innerRadius * 0.85;
-                numbersMaxHeight = innerRadius * 0.85;
-                if(isWide) numbersY = size.t + size.h - (0.15 * size.h);
+                numbersScaler = function(el) {
+                    return fitTextInsideCircle(el, 0.9 * innerRadius);
+                };
+                numbersY = size.t + size.h / 2 + radius / 2;
                 gaugePosition = [centerX, numbersY];
                 bignumberFontSize = Math.min(2 * innerRadius / (fmt(trace.max).length));
-                numbersY -= bignumberFontSize / 2;
                 deltaFontSize = 0.35 * bignumberFontSize;
                 titleFontSize = 0.35 * bignumberFontSize;
+                numbersY -= bignumberFontSize / 2;
+                var pos = trace.delta.position;
+                if(hasBigNumber && hasDelta && (pos === 'top' || pos === 'bottom')) numbersY -= deltaFontSize;
                 if(isWide) {
                     titleY = size.t + (0.25 / 2) * size.h - titleFontSize / 2;
                 } else {
@@ -161,10 +166,11 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(isBullet) {
                 var padding = cn.bulletPadding;
                 var p = (1 - cn.bulletTitleSize) + padding;
-                numbersMaxWidth = (cn.bulletTitleSize - padding) * size.w;
+                numbersScaler = function(el) {
+                    return fitTextInsideBox(el, (cn.bulletTitleSize - padding) * size.w, size.h);
+                };
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 numbersY = size.t + size.h / 2;
-
                 titleX = size.l - padding * size.w;
                 titleY = numbersY;
                 numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
@@ -300,7 +306,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             // Resize numbers to fit
             numbers.attr('transform', function() {
-                var scaleRatio = fitTextInside(numbers, numbersMaxWidth, numbersMaxHeight);
+                var scaleRatio = numbersScaler(numbers);
                 return strTranslate(numbersX, numbersY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
             });
 
@@ -695,9 +701,17 @@ function strRotate(angle) {
     return 'rotate(' + angle + ')';
 }
 
-function fitTextInside(el, width, height) {
+function fitTextInsideBox(el, width, height) {
     // compute scaling ratio to have text fit within specified width and height
     var textBB = Drawing.bBox(el.node());
     var ratio = Math.min(width / textBB.width, height / textBB.height);
+    return ratio;
+}
+
+function fitTextInsideCircle(el, radius) {
+    // compute scaling ratio to have text fit within specified radius
+    var textBB = Drawing.bBox(el.node());
+    var elRadius = Math.sqrt((textBB.width / 2) * (textBB.width / 2) + textBB.height * textBB.height);
+    var ratio = radius / elRadius;
     return ratio;
 }
