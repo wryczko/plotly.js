@@ -112,7 +112,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
 
         // bullet gauge
-        var bulletHeight = Math.min(cn.bulletHeight, size.h / 2);
+        var bulletHeight = size.h; // use all vertical domain
 
         // Position elements
         var titleX, titleY, titleFontSize, textBaseline;
@@ -165,7 +165,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 numbersY = size.t + size.h / 2;
 
-                titleX = size.l + (cn.bulletTitleSize - padding) * size.w * position[trace.title.align];
+                titleX = size.l - padding * size.w;
                 numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
                 deltaFontSize = 0.5 * bignumberFontSize;
                 titleFontSize = 0.4 * bignumberFontSize;
@@ -207,15 +207,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 .call(Drawing.font, trace.title.font)
                 .style('font-size', titleFontSize)
                 .call(svgTextUtils.convertToTspans, gd)
-                .attr('transform', function() {
-                    var scaleRatio;
-                    if(isBullet) {
-                        scaleRatio = fitTextInside(title, (cn.bulletTitleSize - cn.bulletPadding) * size.w, size.h);
-                    } else {
-                        scaleRatio = fitTextInside(title, size.w, size.h);
-                    }
-                    return strTranslate(titleX, titleY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
-                });
+                .attr('transform', strTranslate(titleX, titleY));
             title.exit().remove();
 
             // number indicators
@@ -521,8 +513,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             gaugeBorder.exit().remove();
 
             // Draw bullet
-            var bulletLeft = hasTitle ? cn.bulletTitleSize : 0;
-            var bulletRight = (hasBigNumber || hasDelta) ? (1 - cn.bulletTitleSize) : 1.0;
+            var bulletLeft = 0;
+            var bulletRight = ((hasBigNumber || hasDelta) ? (1 - cn.bulletTitleSize) : 1.0);
 
             data = cd.filter(function() {return isBullet;});
             var innerBulletHeight = trace.gauge.value.height * bulletHeight;
@@ -530,15 +522,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var bullet = d3.select(this).selectAll('g.bullet').data(data);
             bullet.enter().append('g').classed('bullet', true);
             bullet.exit().remove();
-            bullet.attr('transform', 'translate(' + (size.l + (bulletLeft * size.w)) + ',' + bulletVerticalMargin + ')');
+            bullet.attr('transform', 'translate(' + size.l + ', ' + bulletVerticalMargin + ')');
 
             // Draw cartesian axis
             // force full redraw of labels and ticks
             var range = [trace.min, trace.max];
             ax = mockAxis(gd, opts, range);
-            ax.position = 0;
             ax.domain = [bulletLeft, bulletRight];
-            ax.setScale();
+            ax.setScale(false, size);
 
             // var g = d3.select(this);
             // var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
@@ -672,9 +663,7 @@ function mockAxis(gd, opts, zrange) {
         showticksuffix: opts.showticksuffix,
         ticksuffix: opts.ticksuffix,
         title: opts.title,
-        showline: true,
-        anchor: 'free',
-        position: 1
+        showline: true
     };
 
     var axisOut = {
