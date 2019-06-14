@@ -211,7 +211,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 })
                 .text(trace.title.text)
                 .call(Drawing.font, trace.title.font)
-                .style('font-size', titleFontSize)
+                .attr('font-size', titleFontSize)
                 .call(svgTextUtils.convertToTspans, gd)
                 .attr('transform', strTranslate(titleX, titleY));
             title.exit().remove();
@@ -251,7 +251,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var number = numbers.select('tspan.number');
             number
                 .call(Drawing.font, trace.number.font)
-                .style('font-size', bignumberFontSize)
+                .attr('font-size', bignumberFontSize)
                 .attr('x', undefined)
                 .attr('dy', undefined);
 
@@ -259,7 +259,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var delta = numbers.select('tspan.delta');
             delta
                 .call(Drawing.font, trace.delta.font)
-                .style('font-size', deltaFontSize)
+                .attr('font-size', deltaFontSize)
                 .style('fill', deltaFill)
                 .attr('x', deltaX)
                 .attr('dy', deltaDy);
