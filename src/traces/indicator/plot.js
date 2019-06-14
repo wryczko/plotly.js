@@ -75,17 +75,21 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             b: fullLayout._size.b + fullLayout._size.h * (domain.y[0])
         });
 
+        var range = [trace.min, trace.max];
+
         // title
         var titleAnchor = isBullet ? anchor.right : anchor[trace.title.align];
         var titlePadding = cn.titlePadding;
 
         // bignumber
-        var fmt = d3.format(trace.valueformat); // TODO: replace with Axes.ticktext
+        var bignumberAx = mockAxis(gd, {tickformat: trace.valueformat});
+        var fmt = function(v) { return Axes.tickText(bignumberAx, v).text;};
         var bignumberSuffix = trace.number.suffix;
         if(bignumberSuffix) bignumberSuffix = ' ' + bignumberSuffix;
 
         // delta
-        var deltaFmt = d3.format(trace.delta.valueformat); // TODO: replace with Axes.ticktext
+        var deltaAx = mockAxis(gd, {tickformat: trace.delta.valueformat});
+        var deltaFmt = function(v) { return Axes.tickText(deltaAx, v).text;};
         if(!trace._deltaLastValue) trace._deltaLastValue = 0;
         var deltaValue = function(d) {
             var value = trace.delta.showpercentage ? d.relativeDelta : d.delta;
@@ -541,7 +545,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             // Draw cartesian axis
             // force full redraw of labels and ticks
-            var range = [trace.min, trace.max];
             ax = mockAxis(gd, opts, range);
             ax.domain = [bulletLeft, bulletRight];
             ax.setScale(false, size);
