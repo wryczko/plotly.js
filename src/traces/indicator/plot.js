@@ -57,7 +57,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var trace = cd0.trace;
 
         // Elements in trace
-        var hasTitle = trace.title.text;
+        // var hasTitle = trace.title.text;
         var hasBigNumber = trace.mode.indexOf('bignumber') !== -1;
         var hasDelta = trace.mode.indexOf('delta') !== -1;
         var hasGauge = trace.mode.indexOf('gauge') !== -1;
@@ -77,6 +77,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         // title
         var titleAnchor = isBullet ? anchor.right : anchor[trace.title.align];
+        var titlePadding = cn.titlePadding;
 
         // bignumber
         var fmt = d3.format(trace.valueformat); // TODO: replace with Axes.ticktext
@@ -115,16 +116,15 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var bulletHeight = size.h; // use all vertical domain
 
         // Position elements
-        var titleX, titleY, titleFontSize, textBaseline;
+        var titleX, titleY, titleFontSize;
         var numbersX, numbersY, numbersScaler;
-        var bignumberFontSize;
+        var bignumberFontSize, bignumberY;
         var bignumberAnchor = anchor[trace.number.align];
         var deltaFontSize;
         var deltaAnchor = anchor[trace.number.align];
 
         var centerX = size.l + size.w / 2;
         titleX = size.l + size.w * position[trace.title.align];
-        textBaseline = 'central';
 
         numbersY = size.t + size.h / 2;
 
@@ -141,7 +141,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
 
             numbersScaler = function(el) {
-                return fitTextInsideBox(el, 0.85 * size.w, size.h);
+                return fitTextInsideBox(el, 0.9 * size.w, size.h);
             };
         } else {
             if(isAngular) {
@@ -151,17 +151,17 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 };
                 numbersY = size.t + size.h / 2 + radius / 2;
                 gaugePosition = [centerX, numbersY];
-                bignumberFontSize = Math.min(2 * innerRadius / (fmt(trace.max).length));
+                bignumberFontSize = Math.min(2 * 0.85 * innerRadius / (fmt(trace.max).length), 0.85 * innerRadius);
                 deltaFontSize = 0.35 * bignumberFontSize;
                 titleFontSize = 0.35 * bignumberFontSize;
                 numbersY -= bignumberFontSize / 2;
                 var pos = trace.delta.position;
                 if(hasBigNumber && hasDelta && (pos === 'top' || pos === 'bottom')) numbersY -= deltaFontSize;
-                if(isWide) {
-                    titleY = size.t + (0.25 / 2) * size.h - titleFontSize / 2;
-                } else {
-                    titleY = ((numbersY - radius) + size.t) / 2;
-                }
+                // if(isWide) {
+                //     titleY = size.t + (0.25 / 2) * size.h - titleFontSize / 2;
+                // } else {
+                //     titleY = ((numbersY - radius) + size.t) / 2;
+                // }
             }
             if(isBullet) {
                 var padding = cn.bulletPadding;
@@ -186,19 +186,25 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var deltaX = 0;
         if(hasDelta && hasBigNumber) {
             if(trace.delta.position === 'bottom') {
-                deltaDy = (bignumberFontSize / 2 + deltaFontSize / 2);
+                // deltaDy = (bignumberFontSize / 2 + deltaFontSize / 2);
+                deltaDy = deltaFontSize * 1.5;
             }
             if(trace.delta.position === 'top') {
-                deltaDy = -(bignumberFontSize / 2 + deltaFontSize / 2);
+                deltaDy = -bignumberFontSize + MID_SHIFT * deltaFontSize;
                 numbersY += deltaFontSize;
             }
             if(trace.delta.position === 'right') {
-                deltaX = undefined; deltaDy = undefined;
+                deltaX = undefined; deltaDy = 0;
             }
             if(trace.delta.position === 'left') {
-                deltaX = undefined; deltaDy = undefined;
+                deltaX = undefined; deltaDy = 0;
+                bignumberY = MID_SHIFT * bignumberFontSize / 2;
             }
         }
+
+        // titleY += MID_SHIFT * titleFontSize;
+        numbersY += MID_SHIFT * bignumberFontSize;
+        deltaDy -= MID_SHIFT * deltaFontSize;
 
         plotGroup.each(function() {
             // title
@@ -207,13 +213,11 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             title
                 .attr({
                     'text-anchor': titleAnchor,
-                    'alignment-baseline': textBaseline
                 })
                 .text(trace.title.text)
                 .call(Drawing.font, trace.title.font)
                 .attr('font-size', titleFontSize)
-                .call(svgTextUtils.convertToTspans, gd)
-                .attr('transform', strTranslate(titleX, titleY));
+                .call(svgTextUtils.convertToTspans, gd);
             title.exit().remove();
 
             // number indicators
@@ -223,12 +227,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var data = [];
             var numberSpec = {
                 'text-anchor': bignumberAnchor,
-                'alignment-baseline': textBaseline,
                 class: 'number'
             };
             var deltaSpec = {
                 'text-anchor': deltaAnchor,
-                'alignment-baseline': textBaseline,
                 class: 'delta'
             };
             if(hasBigNumber) data.push(numberSpec);
@@ -238,7 +240,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             sel.enter().append('tspan');
             sel
                 .attr('text-anchor', function(d) {return d['text-anchor'];})
-                .attr('alignment-baseline', function(d) {return d['alignment-baseline'];})
                 .attr('class', function(d) { return d.class;})
                 .attr('dx', function(d, i) {
                     var pos = trace.delta.position;
@@ -253,7 +254,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 .call(Drawing.font, trace.number.font)
                 .attr('font-size', bignumberFontSize)
                 .attr('x', undefined)
-                .attr('dy', undefined);
+                .attr('dy', bignumberY);
 
             // delta
             var delta = numbers.select('tspan.delta');
@@ -307,6 +308,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             // Resize numbers to fit
             numbers.attr('transform', function() {
                 var scaleRatio = numbersScaler(numbers);
+                scaleRatio = Math.floor(scaleRatio * 100) / 100;
                 return strTranslate(numbersX, numbersY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
             });
 
@@ -517,6 +519,14 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             gaugeBorder.enter().append('g').classed('gaugeOutline', true).append('path');
             gaugeBorder.select('path').call(drawArc).call(styleArc);
             gaugeBorder.exit().remove();
+
+            // Position title outside domain
+            if(isAngular) {
+                var bBox = axLayer.node().getBoundingClientRect();
+                var bBoxRef = gd.getBoundingClientRect();
+                if(!isBullet) titleY = bBox.top - bBoxRef.top - titlePadding;
+            }
+            title.attr('transform', strTranslate(titleX, titleY));
 
             // Draw bullet
             var bulletLeft = 0;

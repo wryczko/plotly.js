@@ -37,7 +37,7 @@
       "x": [0.25, 1],
       "y": [0.4166, 0.5833]
     },
-    "title": {"text": "<b>Profit</b><br><span style='color: gray; font-size:0.8em'>%</span>"},
+    "title": {"text": "<b>Profit</b>"},
     "type": "indicator",
     "mode": "bignumber+gauge+delta",
     "max": 100,
