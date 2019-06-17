@@ -105,10 +105,10 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         // circular gauge
         var theta = Math.PI / 2;
-        var radius = Math.min(size.w / 2, size.h);
+        var radius = Math.min(size.w / 2, size.h); // fill domain
         var innerRadius = cn.innerRadius * radius;
         var gaugePosition = [0, 0];
-        var isWide = (size.w / 2) > size.h;
+        // var isWide = (size.w / 2) > size.h;
         function valueToAngle(v) {
             var angle = (v - trace.min) / (trace.max - trace.min) * Math.PI - theta;
             if(angle < -theta) return -theta;
@@ -175,7 +175,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 };
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 numbersY = size.t + size.h / 2;
-                titleX = size.l - padding * size.w;
+                titleX = size.l - padding * size.w; // Outside domain, on the left
                 titleY = numbersY;
                 numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
                 deltaFontSize = 0.5 * bignumberFontSize;
@@ -247,6 +247,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 .attr('class', function(d) { return d.class;})
                 .attr('dx', function(d, i) {
                     var pos = trace.delta.position;
+                    // Add padding to the second tspan when it's a one-liner
                     if(i === 1 && (pos === 'left' || pos === 'right')) return 10;
                     return undefined;
                 });
@@ -283,11 +284,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                             that.text(fmt(interpolator(t)) + bignumberSuffix);
                         };
                     });
-            } else {
-                number.text(fmt(cd[0].y) + bignumberSuffix);
-            }
 
-            if(hasTransition) {
                 delta
                     .transition()
                     .duration(transitionOpts.duration)
@@ -304,6 +301,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                         };
                     });
             } else {
+                number.text(fmt(cd[0].y) + bignumberSuffix);
+
                 delta.text(function(d) {
                     return deltaFormatText(deltaValue(d));
                 });
@@ -528,7 +527,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(isAngular) {
                 var bBox = axLayer.node().getBoundingClientRect();
                 var bBoxRef = gd.getBoundingClientRect();
-                if(!isBullet) titleY = bBox.top - bBoxRef.top - titlePadding;
+                titleY = bBox.top - bBoxRef.top - titlePadding;
             }
             title.attr('transform', strTranslate(titleX, titleY));
 
