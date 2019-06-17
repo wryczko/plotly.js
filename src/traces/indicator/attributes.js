@@ -29,7 +29,7 @@ var gaugeBarAttrs = {
     color: {
         valType: 'color',
         editType: 'plot',
-        role: 'plot',
+        role: 'info',
         description: [
             'Sets the background color of the arc.'
         ].join(' ')
@@ -37,7 +37,7 @@ var gaugeBarAttrs = {
     line: {
         color: {
             valType: 'color',
-            role: 'plot',
+            role: 'info',
             dflt: colorAttrs.defaultLine,
             editType: 'plot',
             description: [
@@ -46,7 +46,7 @@ var gaugeBarAttrs = {
         },
         width: {
             valType: 'number',
-            role: 'plot',
+            role: 'info',
             min: 0,
             dflt: 0,
             editType: 'plot',
@@ -58,7 +58,7 @@ var gaugeBarAttrs = {
     },
     height: {
         valType: 'number',
-        role: 'plot',
+        role: 'info',
         min: 0,
         max: 1,
         dflt: 1,
@@ -114,7 +114,7 @@ module.exports = {
     valueformat: {
         valType: 'string',
         dflt: '.3s',
-        role: 'plot',
+        role: 'info',
         editType: 'plot',
         description: [
             'Sets the value formatting rule using d3 formatting mini-language',
@@ -156,7 +156,7 @@ module.exports = {
         align: {
             valType: 'enumerated',
             values: ['left', 'center', 'right'],
-            role: 'plot',
+            role: 'info',
             editType: 'plot',
             description: [
                 'Sets the horizontal alignment of the title.',
@@ -181,7 +181,7 @@ module.exports = {
             valType: 'enumerated',
             values: ['left', 'center', 'right'],
             dflt: 'center',
-            role: 'plot',
+            role: 'info',
             editType: 'plot',
             description: [
                 'Sets the horizontal alignment of the `text` within the box.'
@@ -190,7 +190,7 @@ module.exports = {
         suffix: {
             valType: 'string',
             dflt: '',
-            role: 'plot',
+            role: 'info',
             editType: 'plot',
             description: [
                 'Sets a suffix appearing next to the number.'
@@ -210,7 +210,7 @@ module.exports = {
         position: {
             valType: 'enumerated',
             values: ['top', 'bottom', 'left', 'right'],
-            role: 'plot',
+            role: 'info',
             dflt: 'bottom',
             editType: 'plot',
             description: [
@@ -220,7 +220,7 @@ module.exports = {
         showpercentage: {
             valType: 'boolean',
             editType: 'plot',
-            role: 'plot',
+            role: 'info',
             dflt: false,
             description: [
                 'Show relative change in percentage'
@@ -228,7 +228,7 @@ module.exports = {
         },
         valueformat: {
             valType: 'string',
-            role: 'plot',
+            role: 'info',
             editType: 'plot',
             description: [
                 'Sets the value formatting rule using d3 formatting mini-language',
@@ -239,7 +239,7 @@ module.exports = {
         increasing: {
             symbol: {
                 valType: 'string',
-                role: 'plot',
+                role: 'info',
                 dflt: cn.DIRSYMBOL.increasing,
                 editType: 'plot',
                 description: [
@@ -248,7 +248,7 @@ module.exports = {
             },
             color: {
                 valType: 'color',
-                role: 'plot',
+                role: 'info',
                 dflt: cn.INCREASING_COLOR,
                 editType: 'plot',
                 description: [
@@ -260,7 +260,7 @@ module.exports = {
         decreasing: {
             symbol: {
                 valType: 'string',
-                role: 'plot',
+                role: 'info',
                 dflt: cn.DIRSYMBOL.decreasing,
                 editType: 'plot',
                 description: [
@@ -269,7 +269,7 @@ module.exports = {
             },
             color: {
                 valType: 'color',
-                role: 'plot',
+                role: 'info',
                 dflt: cn.DECREASING_COLOR,
                 editType: 'plot',
                 description: [
@@ -289,7 +289,7 @@ module.exports = {
         shape: {
             valType: 'enumerated',
             editType: 'plot',
-            role: 'plot',
+            role: 'info',
             dflt: 'angular',
             values: ['angular', 'bullet'],
             description: [
@@ -305,14 +305,14 @@ module.exports = {
         // Background of the gauge
         bgcolor: {
             valType: 'color',
-            role: 'plot',
+            role: 'info',
             editType: 'plot',
             description: 'Sets the gauge background color.'
         },
         bordercolor: {
             valType: 'color',
             dflt: colorAttrs.defaultLine,
-            role: 'plot',
+            role: 'info',
             editType: 'plot',
             description: 'Sets the color of the border enclosing the gauge.'
         },
@@ -320,7 +320,7 @@ module.exports = {
             valType: 'number',
             min: 0,
             dflt: 0,
-            role: 'plot',
+            role: 'info',
             editType: 'plot',
             description: 'Sets the width (in px) of the border enclosing the gauge.'
         },
@@ -357,7 +357,7 @@ module.exports = {
         threshold: {
             color: {
                 valType: 'color',
-                role: 'plot',
+                role: 'info',
                 dflt: colorAttrs.defaultLine,
                 editType: 'plot',
                 description: [
@@ -366,7 +366,7 @@ module.exports = {
             },
             height: {
                 valType: 'number',
-                role: 'plot',
+                role: 'info',
                 min: 0,
                 max: 1,
                 dflt: 0.85,
@@ -377,7 +377,7 @@ module.exports = {
             },
             width: {
                 valType: 'number',
-                role: 'plot',
+                role: 'info',
                 min: 0,
                 dflt: 1,
                 editType: 'plot',
