@@ -32,3 +32,12 @@ describe('Indicator defaults', function() {
         expect(out.mode).toBe('bignumber');
     });
 });
+
+
+// It scales numbers down but never up
+
+// It is animatable (check Sunburst)
+
+// It restyle/relayout/react
+
+// Add couple mocks

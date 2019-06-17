@@ -110,7 +110,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var radius = Math.min(size.w / 2, size.h); // fill domain
         var innerRadius = cn.innerRadius * radius;
         var gaugePosition = [0, 0];
-        // var isWide = (size.w / 2) > size.h;
         function valueToAngle(v) {
             var angle = (v - trace.min) / (trace.max - trace.min) * Math.PI - theta;
             if(angle < -theta) return -theta;
@@ -131,7 +130,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
         var centerX = size.l + size.w / 2;
         titleX = size.l + size.w * position[trace.title.align];
-
         numbersY = size.t + size.h / 2;
 
         if(!hasGauge) {
@@ -142,28 +140,31 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         } else {
             if(isAngular) {
                 numbersX = centerX - 0.85 * innerRadius + 2 * 0.85 * innerRadius * position[trace.number.align];
+                numbersY = size.t + size.h / 2 + radius / 2;
+                gaugePosition = [centerX, numbersY];
+
                 numbersScaler = function(el) {
                     return fitTextInsideCircle(el, 0.9 * innerRadius);
                 };
-                numbersY = size.t + size.h / 2 + radius / 2;
-                gaugePosition = [centerX, numbersY];
             }
             if(isBullet) {
                 var padding = cn.bulletPadding;
                 var p = (1 - cn.bulletTitleSize) + padding;
-                numbersScaler = function(el) {
-                    return fitTextInsideBox(el, (cn.bulletTitleSize - padding) * size.w, size.h);
-                };
+                numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 titleX = size.l - padding * size.w; // Outside domain, on the left
                 titleY = numbersY;
-                numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
+
+                numbersScaler = function(el) {
+                    return fitTextInsideBox(el, (cn.bulletTitleSize - padding) * size.w, size.h);
+                };
             }
         }
         bignumberFontSize = trace.number.font.size;
         deltaFontSize = trace.delta.font.size;
         titleFontSize = trace.title.font.size;
 
+        // Position delta relative to bignumber
         var deltaDy = 0;
         var deltaX = 0;
         if(hasDelta && hasBigNumber) {
@@ -182,9 +183,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 bignumberY = MID_SHIFT * bignumberFontSize / 2;
             }
         }
-
-        // titleY += MID_SHIFT * titleFontSize;
-        // numbersY += MID_SHIFT * bignumberFontSize;
         deltaDy -= MID_SHIFT * deltaFontSize;
 
         plotGroup.each(function() {
@@ -197,7 +195,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 })
                 .text(trace.title.text)
                 .call(Drawing.font, trace.title.font)
-                .attr('font-size', titleFontSize)
                 .call(svgTextUtils.convertToTspans, gd);
             title.exit().remove();
 
@@ -234,7 +231,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var number = numbers.select('tspan.number');
             number
                 .call(Drawing.font, trace.number.font)
-                .attr('font-size', bignumberFontSize)
                 .attr('x', undefined)
                 .attr('dy', bignumberY);
 
@@ -242,7 +238,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var delta = numbers.select('tspan.delta');
             delta
                 .call(Drawing.font, trace.delta.font)
-                .attr('font-size', deltaFontSize)
                 .style('fill', deltaFill)
                 .attr('x', deltaX)
                 .attr('dy', deltaDy);
