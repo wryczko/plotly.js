@@ -51,6 +51,8 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
     }
 
+    var bBoxRef = gd.getBoundingClientRect();
+
     Lib.makeTraceGroups(fullLayout._indicatorlayer, cdModule, 'trace').each(function(cd) {
         var plotGroup = d3.select(this);
         var cd0 = cd[0];
@@ -133,19 +135,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         numbersY = size.t + size.h / 2;
 
         if(!hasGauge) {
-            // when no gauge, we are only constrained by figure size
             numbersX = size.l + position[trace.number.align] * size.w;
-            bignumberFontSize = Math.min(size.w / (fmt(trace.max).length), size.h / 3);
-            if(hasBigNumber) {
-                deltaFontSize = 0.5 * bignumberFontSize;
-            } else {
-                deltaFontSize = bignumberFontSize;
-            }
-            titleFontSize = 0.35 * bignumberFontSize;
-            titleY = size.t + Math.max(titleFontSize / 2, size.h / 5);
-
             numbersScaler = function(el) {
-                return fitTextInsideBox(el, 0.9 * size.w, size.h);
+                return fitTextInsideBox(el, 0.9 * size.w, 0.9 * size.h);
             };
         } else {
             if(isAngular) {
@@ -155,17 +147,6 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 };
                 numbersY = size.t + size.h / 2 + radius / 2;
                 gaugePosition = [centerX, numbersY];
-                bignumberFontSize = Math.min(2 * 0.85 * innerRadius / (fmt(trace.max).length), 0.85 * innerRadius);
-                deltaFontSize = 0.35 * bignumberFontSize;
-                titleFontSize = 0.35 * bignumberFontSize;
-                numbersY -= bignumberFontSize / 2;
-                var pos = trace.delta.position;
-                if(hasBigNumber && hasDelta && (pos === 'top' || pos === 'bottom')) numbersY -= deltaFontSize;
-                // if(isWide) {
-                //     titleY = size.t + (0.25 / 2) * size.h - titleFontSize / 2;
-                // } else {
-                //     titleY = ((numbersY - radius) + size.t) / 2;
-                // }
             }
             if(isBullet) {
                 var padding = cn.bulletPadding;
@@ -174,19 +155,16 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                     return fitTextInsideBox(el, (cn.bulletTitleSize - padding) * size.w, size.h);
                 };
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
-                numbersY = size.t + size.h / 2;
                 titleX = size.l - padding * size.w; // Outside domain, on the left
                 titleY = numbersY;
                 numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
-                deltaFontSize = 0.5 * bignumberFontSize;
-                titleFontSize = 0.4 * bignumberFontSize;
-            }
-
-            if(!hasBigNumber) {
-                deltaFontSize = 0.75 * bignumberFontSize;
             }
         }
-        var deltaDy;
+        bignumberFontSize = trace.number.font.size;
+        deltaFontSize = trace.delta.font.size;
+        titleFontSize = trace.title.font.size;
+
+        var deltaDy = 0;
         var deltaX = 0;
         if(hasDelta && hasBigNumber) {
             if(trace.delta.position === 'bottom') {
@@ -195,19 +173,18 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             }
             if(trace.delta.position === 'top') {
                 deltaDy = -bignumberFontSize + MID_SHIFT * deltaFontSize;
-                numbersY += deltaFontSize;
             }
             if(trace.delta.position === 'right') {
-                deltaX = undefined; deltaDy = 0;
+                deltaX = undefined;
             }
             if(trace.delta.position === 'left') {
-                deltaX = undefined; deltaDy = 0;
+                deltaX = undefined;
                 bignumberY = MID_SHIFT * bignumberFontSize / 2;
             }
         }
 
         // titleY += MID_SHIFT * titleFontSize;
-        numbersY += MID_SHIFT * bignumberFontSize;
+        // numbersY += MID_SHIFT * bignumberFontSize;
         deltaDy -= MID_SHIFT * deltaFontSize;
 
         plotGroup.each(function() {
@@ -308,11 +285,26 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 });
             }
 
-            // Resize numbers to fit
+            // Resize numbers to fit within space and position
+            var numbersbBox;
             numbers.attr('transform', function() {
-                var scaleRatio = numbersScaler(numbers);
-                scaleRatio = Math.floor(scaleRatio * 100) / 100;
-                return strTranslate(numbersX, numbersY) + ' ' + (scaleRatio < 1 ? 'scale(' + scaleRatio + ')' : '');
+                var m = numbersScaler(numbers);
+                var scaleRatio = Math.floor(m[0] * 100) / 100;
+                scaleRatio = Math.min(scaleRatio, 1);
+                numbersbBox = m[1];
+                var translateY;
+                if(isAngular) {
+                    // bottom-align
+                    translateY = numbersY - scaleRatio * numbersbBox.bottom;
+                } else {
+                    // center-align
+                    translateY = numbersY - scaleRatio * (numbersbBox.top + numbersbBox.bottom) / 2;
+                }
+
+                // If no gauge, compute title position relative to numbers
+                titleY = scaleRatio * (numbersbBox.top) + translateY - titlePadding;
+
+                return strTranslate(numbersX, translateY) + ' scale(' + scaleRatio + ')';
             });
 
             // Draw circular gauge
@@ -410,12 +402,12 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 return _transFn(rad) + strRotate(-rad2deg(rad));
             };
 
-            var axLayer = d3.select(this).selectAll('g.angularaxis').data(data);
-            axLayer.enter().append('g')
+            var angularaxisLayer = d3.select(this).selectAll('g.angularaxis').data(data);
+            angularaxisLayer.enter().append('g')
               .classed('angularaxis', true)
               .classed('crisp', true);
-            axLayer.exit().remove();
-            axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
+            angularaxisLayer.exit().remove();
+            angularaxisLayer.selectAll('g.' + ax._id + 'tick,path').remove();
 
             var vals = Axes.calcTicks(ax);
             var tickSign;
@@ -426,7 +418,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
                 Axes.drawTicks(gd, ax, {
                     vals: vals,
-                    layer: axLayer,
+                    layer: angularaxisLayer,
                     path: 'M' + (tickSign * pad) + ',0h' + (tickSign * ax.ticklen),
                     transFn: transFn2,
                     crips: true
@@ -434,7 +426,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
                 Axes.drawLabels(gd, ax, {
                     vals: vals,
-                    layer: axLayer,
+                    layer: angularaxisLayer,
                     transFn: transFn,
                     labelFns: labelFns
                 });
@@ -482,7 +474,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                     });
             }
 
-            function styleArc(p) {
+            function styleShape(p) {
                 p
                     .style('fill', function(d) { return d.color;})
                     .style('stroke', function(d) { return d.line.color;})
@@ -494,7 +486,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(v) arcs.push(thresholdArc);
             var targetArc = gauge.selectAll('g.targetArc').data(arcs);
             targetArc.enter().append('g').classed('targetArc', true).append('path');
-            targetArc.select('path').call(drawArc).call(styleArc);
+            targetArc.select('path').call(drawArc).call(styleShape);
             targetArc.exit().remove();
 
             // Draw foreground with transition
@@ -515,21 +507,13 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                 fgArcPath
                       .attr('d', valueArcPath.endAngle(valueToAngle(cd[0].y)));
             }
-            fgArcPath.call(styleArc);
+            fgArcPath.call(styleShape);
             fgArc.exit().remove();
 
             var gaugeBorder = gauge.selectAll('g.gaugeOutline').data([gaugeOutline]);
             gaugeBorder.enter().append('g').classed('gaugeOutline', true).append('path');
-            gaugeBorder.select('path').call(drawArc).call(styleArc);
+            gaugeBorder.select('path').call(drawArc).call(styleShape);
             gaugeBorder.exit().remove();
-
-            // Position title outside domain
-            if(isAngular) {
-                var bBox = axLayer.node().getBoundingClientRect();
-                var bBoxRef = gd.getBoundingClientRect();
-                titleY = bBox.top - bBoxRef.top - titlePadding;
-            }
-            title.attr('transform', strTranslate(titleX, titleY));
 
             // Draw bullet
             var bulletLeft = 0;
@@ -554,51 +538,48 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
 
             // var g = d3.select(this);
             // var axLayer = Lib.ensureSingle(g, 'g', 'gaugeaxis', function(s) { s.classed('crisp', true); });
-            axLayer = d3.select(this).selectAll('g.bulletaxis').data(data);
-            axLayer.enter().append('g')
+            var bulletaxis = d3.select(this).selectAll('g.bulletaxis').data(data);
+            bulletaxis.enter().append('g')
               .classed('bulletaxis', true)
               .classed('crisp', true);
-            axLayer.selectAll('g.' + ax._id + 'tick,path').remove();
-            axLayer.exit().remove();
+            bulletaxis.selectAll('g.' + ax._id + 'tick,path').remove();
+            bulletaxis.exit().remove();
 
             shift = size.t + size.h;
             if(ax.visible) {
                 Axes.drawTicks(gd, ax, {
                     vals: ax.ticks === 'inside' ? Axes.clipEnds(ax, vals) : vals,
-                    layer: axLayer,
+                    layer: bulletaxis,
                     path: Axes.makeTickPath(ax, shift, tickSign),
                     transFn: transFn
                 });
 
                 Axes.drawLabels(gd, ax, {
                     vals: vals,
-                    layer: axLayer,
+                    layer: bulletaxis,
                     transFn: transFn,
                     labelFns: Axes.makeLabelFns(ax, shift)
                 });
             }
 
-            // Draw bullet background and steps
-            var targetBullet = bullet.selectAll('g.targetBullet').data([gaugeBg].concat(trace.gauge.steps));
+            // Draw bullet background, steps and thresholds
+            var boxes = [gaugeBg].concat(trace.gauge.steps);
+            var targetBullet = bullet.selectAll('g.targetBullet').data(boxes);
             targetBullet.enter().append('g').classed('targetBullet', true).append('rect');
             targetBullet.select('rect')
                   .attr('width', function(d) { return Math.max(0, ax.c2p(d.range[1] - d.range[0]));})
                   .attr('x', function(d) { return ax.c2p(d.range[0]);})
                   .attr('height', bulletHeight)
-                  .style('fill', function(d) { return d.color;})
-                  .style('stroke', function(d) { return d.line.color;})
-                  .style('stroke-width', function(d) { return d.line.width;});
+                  .call(styleShape);
             targetBullet.exit().remove();
 
             // Draw value bar with transitions
-            var fgBullet = bullet.selectAll('g.fgBullet').data(cd);
+            var fgBullet = bullet.selectAll('g.fgBullet').data([trace.gauge.value]);
             fgBullet.enter().append('g').classed('fgBullet', true).append('rect');
             fgBullet.select('rect')
                   .attr('height', innerBulletHeight)
                   .attr('y', (bulletHeight - innerBulletHeight) / 2)
-                  .style('fill', trace.gauge.value.color)
-                  .style('stroke', trace.gauge.value.line.color)
-                  .style('stroke-width', trace.gauge.value.line.width);
+                  .call(styleShape);
             if(hasTransition) {
                 fgBullet.select('rect')
                   .transition()
@@ -631,10 +612,25 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
                   .attr('width', function(d) { return Math.max(0, ax.c2p(d.range[1] - d.range[0]));})
                   .attr('x', function(d) { return ax.c2p(d.range[0]);})
                   .attr('height', bulletHeight)
-                  .style('fill', function(d) { return d.color;})
-                  .style('stroke', function(d) { return d.line.color;})
-                  .style('stroke-width', function(d) { return d.line.width;});
+                  .call(styleShape);
             bulletOutline.exit().remove();
+
+            // Position title
+            title.attr('transform', function() {
+                if(hasGauge) {
+                    if(isAngular) {
+                        // position above axis ticks/labels
+                        var bBox = angularaxisLayer.node().getBoundingClientRect();
+                        titleY = bBox.top - bBoxRef.top - titlePadding;
+                    }
+                    if(isBullet) {
+                        // position outside domain
+                        var titlebBox = Drawing.bBox(title.node());
+                        titleY = numbersY - (titlebBox.top + titlebBox.bottom) / 2;
+                    }
+                }
+                return strTranslate(titleX, titleY);
+            });
         });
     });
 };
@@ -716,7 +712,7 @@ function fitTextInsideBox(el, width, height) {
     // compute scaling ratio to have text fit within specified width and height
     var textBB = Drawing.bBox(el.node());
     var ratio = Math.min(width / textBB.width, height / textBB.height);
-    return ratio;
+    return [ratio, textBB];
 }
 
 function fitTextInsideCircle(el, radius) {
@@ -724,5 +720,5 @@ function fitTextInsideCircle(el, radius) {
     var textBB = Drawing.bBox(el.node());
     var elRadius = Math.sqrt((textBB.width / 2) * (textBB.width / 2) + textBB.height * textBB.height);
     var ratio = radius / elRadius;
-    return ratio;
+    return [ratio, textBB];
 }

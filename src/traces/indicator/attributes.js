@@ -24,9 +24,7 @@ var textFontAttrs = fontAttrs({
     editType: 'plot',
     colorEditType: 'plot'
 });
-delete(textFontAttrs.size); // TODO: relative size?
 
-// TODO: choose appropriate editType
 var gaugeBarAttrs = {
     color: {
         valType: 'color',

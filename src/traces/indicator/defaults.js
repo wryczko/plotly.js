@@ -33,14 +33,17 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     handleDomainDefaults(traceOut, layout, coerce);
 
     // Number attributes
+    var hasBigNumber = traceOut.mode.indexOf('bignumber') !== -1;
     coerce('number.font.color', layout.font.color);
     coerce('number.font.family', layout.font.family);
+    coerce('number.font.size', cn.defaultNumberFontSize);
     coerce('number.align');
     coerce('number.suffix');
 
     // Title attributes
     coerce('title.font.color', traceOut.number.font.color);
     coerce('title.font.family', traceOut.number.font.family);
+    coerce('title.font.size', 0.25 * traceOut.number.font.size);
     coerce('title.text');
     // Lib.coerceFont(coerce, 'font', layout.font);
 
@@ -101,6 +104,7 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     // delta attributes
     coerce('delta.font.color', traceOut.number.font.color);
     coerce('delta.font.family', traceOut.number.font.family);
+    coerce('delta.font.size', (hasBigNumber ? 0.5 : 1) * traceOut.number.font.size);
     coerce('delta.reference', traceOut.value);
     coerce('delta.showpercentage');
     coerce('delta.valueformat', traceOut.delta.showpercentage ? '2%' : traceOut.valueformat);
