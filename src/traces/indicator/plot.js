@@ -289,8 +289,9 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             var numbersbBox;
             numbers.attr('transform', function() {
                 var m = numbersScaler(numbers);
-                var scaleRatio = Math.floor(m[0] * 100) / 100;
-                scaleRatio = Math.min(scaleRatio, 1);
+                // stash the latest scaleRatio
+                if(!trace._scaleRatio) trace._scaleRatio = 1;
+                var scaleRatio = trace._scaleRatio = Math.min(trace._scaleRatio, m[0]);
                 numbersbBox = m[1];
                 var translateY;
                 if(isAngular) {
