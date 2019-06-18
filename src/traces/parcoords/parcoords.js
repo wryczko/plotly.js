@@ -238,6 +238,7 @@ function viewModel(state, callbacks, model) {
         var filterRange = filterRangeSpecified ?
             specifiedConstraint.map(function(d) { return d.map(domainToPaddedUnit); }) :
             [[-Infinity, Infinity]];
+
         var brushMove = function() {
             var p = viewModel;
             p.focusLayer && p.focusLayer.render(p.panels, true);
@@ -312,7 +313,6 @@ function viewModel(state, callbacks, model) {
             parent: viewModel,
             model: model,
             brush: brush.makeBrush(
-                state,
                 filterRangeSpecified,
                 filterRange,
                 function() {

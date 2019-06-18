@@ -477,7 +477,7 @@ function makeFilter() {
     };
 }
 
-function makeBrush(state, rangeSpecified, initialRange, brushStartCallback, brushCallback, brushEndCallback) {
+function makeBrush(rangeSpecified, initialRange, brushStartCallback, brushCallback, brushEndCallback) {
     var filter = makeFilter();
     filter.set(initialRange);
     return {
