@@ -129,7 +129,8 @@ module.exports = {
         editType: 'plot',
         description: [
             'Sets the horizontal alignment of the `text` within the box.',
-            'Note that this attribute has no effect if a gauge is displayed'
+            'Note that this attribute has no effect if an angular gauge is displayed:',
+            'in this case, it is always centered'
         ].join(' ')
     },
     // position
