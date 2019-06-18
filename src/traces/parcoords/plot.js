@@ -52,7 +52,7 @@ module.exports = function plot(gd, cdModule) {
         initialDims[i] = gd.data[iIn].dimensions.slice();
     });
 
-    var filterChanged = function(i, initialDimIndex, newRanges) {
+    function filterChanged(i, initialDimIndex, newRanges) {
         // Have updated `constraintrange` data on `gd.data` and raise `Plotly.restyle` event
         // without having to incur heavy UI blocking due to an actual `Plotly.restyle` call
 
@@ -87,17 +87,17 @@ module.exports = function plot(gd, cdModule) {
         var restyleData = {};
         restyleData[aStr] = newConstraints;
         gd.emit('plotly_restyle', [restyleData, [inputIndices[i]]]);
-    };
+    }
 
-    var hover = function(eventData) {
+    function hover(eventData) {
         gd.emit('plotly_hover', eventData);
-    };
+    }
 
-    var unhover = function(eventData) {
+    function unhover(eventData) {
         gd.emit('plotly_unhover', eventData);
-    };
+    }
 
-    var axesMoved = function(i, visibleIndices) {
+    function axesMoved(i, visibleIndices) {
         // Have updated order data on `gd.data` and raise `Plotly.restyle` event
         // without having to incur heavy UI blocking due to an actual `Plotly.restyle` call
 
@@ -128,7 +128,7 @@ module.exports = function plot(gd, cdModule) {
         // );
 
         gd.emit('plotly_restyle', [{dimensions: [currentDims[i]]}, [inputIndices[i]]]);
-    };
+    }
 
     parcoords(
         gd,

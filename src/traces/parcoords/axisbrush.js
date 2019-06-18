@@ -288,6 +288,13 @@ function attachDragBehavior(selection) {
                 e.sourceEvent.stopPropagation();
                 var brush = d.brush;
                 var filter = brush.filter;
+
+                function mergeIntervals() {
+                    // Key piece of logic: once the button is released, possibly overlapping intervals will be fused:
+                    // Here it's done immediately on click release while on ordinal snap transition it's done at the end
+                    filter.set(filter.getConsolidated());
+                }
+
                 var s = brush.svgBrush;
                 var grabbingBar = s.grabbingBar;
                 s.grabbingBar = false;
@@ -316,12 +323,6 @@ function attachDragBehavior(selection) {
                     s.brushEndCallback(brush.filterSpecified ? filter.getConsolidated() : []);
                     return; // no need to fuse intervals or snap to ordinals, so we can bail early
                 }
-
-                var mergeIntervals = function() {
-                    // Key piece of logic: once the button is released, possibly overlapping intervals will be fused:
-                    // Here it's done immediately on click release while on ordinal snap transition it's done at the end
-                    filter.set(filter.getConsolidated());
-                };
 
                 if(d.ordinal) {
                     var a = d.unitTickvals;
