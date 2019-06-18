@@ -110,7 +110,6 @@ function unitToColorScale(cscale) {
         var RGBA = rgba(d[1]);
         return d3.rgb('rgb(' + RGBA[0] + ',' + RGBA[1] + ',' + RGBA[2] + ')');
     });
-    var prop = function(n) { return function(o) { return o[n]; }; };
 
     // We can't use d3 color interpolation as we may have non-uniform color palette raster
     // (various color stop distances).
@@ -118,7 +117,9 @@ function unitToColorScale(cscale) {
         return d3.scale.linear()
             .clamp(true)
             .domain(colorStops)
-            .range(colorTuples.map(prop(key)));
+            .range(colorTuples.map(function(obj) {
+                return obj[key];
+            }));
     });
 
     return function(d) {
@@ -211,7 +212,9 @@ function viewModel(state, callbacks, model) {
     var dimensions = model.dimensions;
     var canvasPixelRatio = model.canvasPixelRatio;
 
-    var xScale = function(d) {return width * d / Math.max(1, model.colCount - 1);};
+    function xScale(d) {
+        return width * d / Math.max(1, model.colCount - 1);
+    }
 
     var unitPad = c.verticalPadding / height;
     var _unitToPaddedPx = unitToPaddedPx(height, c.verticalPadding);
@@ -222,6 +225,19 @@ function viewModel(state, callbacks, model) {
         model: model,
         inBrushDrag: false // consider factoring it out and putting it in a centralized global-ish gesture state object
     };
+
+    function brushMove() {
+        var p = viewModel;
+        p.focusLayer && p.focusLayer.render(p.panels, true);
+        var filtersActive = someFiltersActive(p);
+        if(!state.contextShown() && filtersActive) {
+            p.contextLayer && p.contextLayer.render(p.panels, true);
+            state.contextShown(true);
+        } else if(state.contextShown() && !filtersActive) {
+            p.contextLayer && p.contextLayer.render(p.panels, true, true);
+            state.contextShown(false);
+        }
+    }
 
     var uniqueKeys = {};
 
@@ -238,19 +254,6 @@ function viewModel(state, callbacks, model) {
         var filterRange = filterRangeSpecified ?
             specifiedConstraint.map(function(d) { return d.map(domainToPaddedUnit); }) :
             [[-Infinity, Infinity]];
-
-        var brushMove = function() {
-            var p = viewModel;
-            p.focusLayer && p.focusLayer.render(p.panels, true);
-            var filtersActive = someFiltersActive(p);
-            if(!state.contextShown() && filtersActive) {
-                p.contextLayer && p.contextLayer.render(p.panels, true);
-                state.contextShown(true);
-            } else if(state.contextShown() && !filtersActive) {
-                p.contextLayer && p.contextLayer.render(p.panels, true, true);
-                state.contextShown(false);
-            }
-        };
 
         var truncatedValues = dim.values;
         if(truncatedValues.length > dim._length) {
