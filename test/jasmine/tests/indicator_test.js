@@ -32,6 +32,18 @@ describe('Indicator defaults', function() {
         expect(out.mode).toBe('bignumber');
     });
 
+    it('defaults to formatting numbers using SI prefix', function() {
+        var out = _supply({type: 'indicator', value: 1});
+        expect(out.valueformat).toBe('.3s');
+        expect(out.delta.valueformat).toBe('.3s');
+    });
+
+    it('defaults to displaying relative changes in percentage', function() {
+        var out = _supply({type: 'indicator', delta: {showpercentage: true}, value: 1});
+        expect(out.valueformat).toBe('.3s');
+        expect(out.delta.valueformat).toBe('2%');
+    });
+
     // text alignment
     ['bignumber'].forEach(function(mode) {
         it('aligns to center', function() {
@@ -41,24 +53,24 @@ describe('Indicator defaults', function() {
                 value: 1,
                 gauge: {shape: 'angular'}
             });
-            expect(out.number.align).toBe('center');
+            expect(out.align).toBe('center');
             expect(out.title.align).toBe('center');
         });
     });
 
     it('should NOT set number alignment when angular', function() {
         var out = _supply({type: 'indicator', mode: 'gauge', gauge: {shape: 'angular'}, value: 1});
-        expect(out.number.align).toBe(undefined);
+        expect(out.align).toBe(undefined);
         expect(out.title.align).toBe('center');
     });
 
     it('should NOT set title alignment when bullet', function() {
         var out = _supply({type: 'indicator', mode: 'gauge', gauge: {shape: 'bullet'}, value: 1});
-        expect(out.number.align).toBe('center');
+        expect(out.align).toBe('center');
         expect(out.title.align).toBe(undefined);
     });
 
-    // text alignment
+    // font-size
     it('number font size to a large value', function() {
         var out = _supply({type: 'indicator', value: 1});
         expect(out.number.font.size).toBe(80);
@@ -78,14 +90,13 @@ describe('Indicator defaults', function() {
 });
 
 describe('Indicator plot', function() {
+    var gd;
+    beforeEach(function() {
+        gd = createGraphDiv();
+    });
+    afterEach(destroyGraphDiv);
+
     describe('numbers', function() {
-        var gd;
-        beforeEach(function() {
-            gd = createGraphDiv();
-        });
-
-        afterEach(destroyGraphDiv);
-
         function checkNumbersScale(value, msg) {
             var numbers = d3.selectAll('text.numbers');
             expect(numbers.length).toBe(1);
@@ -160,6 +171,35 @@ describe('Indicator plot', function() {
         //     .catch(failTest)
         //     .then(done);
         // });
+    });
+
+    describe('delta', function() {
+        function assertContent(txt) {
+            var sel = d3.selectAll('tspan.delta');
+            expect(sel.length).toBe(1);
+            expect(sel.text()).toBe(txt);
+        }
+        it('displays relative changes', function(done) {
+            Plotly.newPlot(gd, [{
+                type: 'indicator',
+                mode: 'bignumber+delta',
+                value: 110,
+                delta: {reference: 100}
+            }], {width: 400, height: 400})
+            .then(function() {
+                assertContent(gd._fullData[0].delta.increasing.symbol + '10.0');
+                return Plotly.restyle(gd, 'delta.showpercentage', true);
+            })
+            .then(function() {
+                assertContent(gd._fullData[0].delta.increasing.symbol + '10%');
+                return Plotly.restyle(gd, 'delta.valueformat', '.3f');
+            })
+            .then(function() {
+                assertContent(gd._fullData[0].delta.increasing.symbol + '0.100');
+            })
+            .catch(failTest)
+            .then(done);
+        });
     });
 
     describe('angular gauge', function() {

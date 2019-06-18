@@ -122,6 +122,16 @@ module.exports = {
             'https://github.com/d3/d3-format/blob/master/README.md#locale_format'
         ].join(' ')
     },
+    align: {
+        valType: 'enumerated',
+        values: ['left', 'center', 'right'],
+        role: 'info',
+        editType: 'plot',
+        description: [
+            'Sets the horizontal alignment of the `text` within the box.',
+            'Note that this attribute has no effect if a gauge is displayed'
+        ].join(' ')
+    },
     // position
     domain: domainAttrs({name: 'indicator', trace: true, editType: 'calc'}),
 
@@ -177,16 +187,6 @@ module.exports = {
                 'Set the font used to display main number'
             ].join(' ')
         }),
-        align: {
-            valType: 'enumerated',
-            values: ['left', 'center', 'right'],
-            role: 'info',
-            editType: 'plot',
-            description: [
-                'Sets the horizontal alignment of the `text` within the box.',
-                'Note that this attribute has no effect if a gauge is displayed'
-            ].join(' ')
-        },
         suffix: {
             valType: 'string',
             dflt: '',

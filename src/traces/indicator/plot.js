@@ -124,7 +124,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var titleX, titleY;
         var numbersX, numbersY, numbersScaler;
         var bignumberFontSize, bignumberY;
-        var bignumberAlign = trace.number.align || 'center';
+        var bignumberAlign = trace.align || 'center';
         var bignumberAnchor = anchor[bignumberAlign];
         var deltaFontSize;
         var deltaAnchor = bignumberAnchor;

@@ -59,7 +59,7 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     }
     var isAngular = traceOut.mode.indexOf('gauge') !== -1 && traceOut.gauge.shape === 'angular';
     if(!isAngular) {
-        coerce('number.align', 'center');
+        coerce('align', 'center');
     }
 
     // gauge background
