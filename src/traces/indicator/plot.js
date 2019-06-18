@@ -121,25 +121,26 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         var bulletHeight = size.h; // use all vertical domain
 
         // Position elements
-        var titleX, titleY, titleFontSize;
+        var titleX, titleY;
         var numbersX, numbersY, numbersScaler;
         var bignumberFontSize, bignumberY;
-        var bignumberAnchor = anchor[trace.number.align];
+        var bignumberAlign = trace.number.align || 'center';
+        var bignumberAnchor = anchor[bignumberAlign];
         var deltaFontSize;
-        var deltaAnchor = anchor[trace.number.align];
+        var deltaAnchor = bignumberAnchor;
 
         var centerX = size.l + size.w / 2;
         titleX = size.l + size.w * position[trace.title.align];
         numbersY = size.t + size.h / 2;
 
         if(!hasGauge) {
-            numbersX = size.l + position[trace.number.align] * size.w;
+            numbersX = size.l + position[bignumberAlign] * size.w;
             numbersScaler = function(el) {
                 return fitTextInsideBox(el, 0.9 * size.w, 0.9 * size.h);
             };
         } else {
             if(isAngular) {
-                numbersX = centerX - 0.85 * innerRadius + 2 * 0.85 * innerRadius * position[trace.number.align];
+                numbersX = centerX - 0.85 * innerRadius + 2 * 0.85 * innerRadius * position[bignumberAlign];
                 numbersY = size.t + size.h / 2 + radius / 2;
                 gaugePosition = [centerX, numbersY];
 
@@ -150,7 +151,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
             if(isBullet) {
                 var padding = cn.bulletPadding;
                 var p = (1 - cn.bulletTitleSize) + padding;
-                numbersX = size.l + (p + (1 - p) * position[trace.number.align]) * size.w;
+                numbersX = size.l + (p + (1 - p) * position[bignumberAlign]) * size.w;
                 bignumberFontSize = Math.min(0.2 * size.w / (fmt(trace.max).length), bulletHeight);
                 titleX = size.l - padding * size.w; // Outside domain, on the left
                 titleY = numbersY;
@@ -162,7 +163,7 @@ module.exports = function plot(gd, cdModule, transitionOpts, makeOnCompleteCallb
         }
         bignumberFontSize = trace.number.font.size;
         deltaFontSize = trace.delta.font.size;
-        titleFontSize = trace.title.font.size;
+        // titleFontSize = trace.title.font.size;
 
         // Position delta relative to bignumber
         var deltaDy = 0;

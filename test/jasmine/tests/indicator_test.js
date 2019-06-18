@@ -32,6 +32,33 @@ describe('Indicator defaults', function() {
         expect(out.mode).toBe('bignumber');
     });
 
+    // text alignment
+    ['bignumber'].forEach(function(mode) {
+        it('aligns to center', function() {
+            var out = _supply({
+                type: 'indicator',
+                mode: mode,
+                value: 1,
+                gauge: {shape: 'angular'}
+            });
+            expect(out.number.align).toBe('center');
+            expect(out.title.align).toBe('center');
+        });
+    });
+
+    it('should NOT set number alignment when angular', function() {
+        var out = _supply({type: 'indicator', mode: 'gauge', gauge: {shape: 'angular'}, value: 1});
+        expect(out.number.align).toBe(undefined);
+        expect(out.title.align).toBe('center');
+    });
+
+    it('should NOT set title alignment when bullet', function() {
+        var out = _supply({type: 'indicator', mode: 'gauge', gauge: {shape: 'bullet'}, value: 1});
+        expect(out.number.align).toBe('center');
+        expect(out.title.align).toBe(undefined);
+    });
+
+    // text alignment
     it('number font size to a large value', function() {
         var out = _supply({type: 'indicator', value: 1});
         expect(out.number.font.size).toBe(80);
@@ -51,7 +78,7 @@ describe('Indicator defaults', function() {
 });
 
 describe('Indicator plot', function() {
-    describe('font.size for `number` and `delta`', function() {
+    describe('numbers', function() {
         var gd;
         beforeEach(function() {
             gd = createGraphDiv();
@@ -134,9 +161,15 @@ describe('Indicator plot', function() {
         //     .then(done);
         // });
     });
-});
 
-// It scales numbers down but never up
+    describe('angular gauge', function() {
+
+    });
+
+    describe('bullet gauge', function() {
+
+    });
+});
 
 // It is animatable (check Sunburst)
 

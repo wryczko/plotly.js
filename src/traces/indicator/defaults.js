@@ -37,7 +37,6 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     coerce('number.font.color', layout.font.color);
     coerce('number.font.family', layout.font.family);
     coerce('number.font.size', cn.defaultNumberFontSize);
-    coerce('number.align');
     coerce('number.suffix');
 
     // Title attributes
@@ -57,6 +56,10 @@ function supplyDefaults(traceIn, traceOut, defaultColor, layout) {
     var isBullet = traceOut.mode.indexOf('gauge') !== -1 && traceOut.gauge.shape === 'bullet';
     if(!isBullet) {
         coerce('title.align', 'center');
+    }
+    var isAngular = traceOut.mode.indexOf('gauge') !== -1 && traceOut.gauge.shape === 'angular';
+    if(!isAngular) {
+        coerce('number.align', 'center');
     }
 
     // gauge background

@@ -180,11 +180,11 @@ module.exports = {
         align: {
             valType: 'enumerated',
             values: ['left', 'center', 'right'],
-            dflt: 'center',
             role: 'info',
             editType: 'plot',
             description: [
-                'Sets the horizontal alignment of the `text` within the box.'
+                'Sets the horizontal alignment of the `text` within the box.',
+                'Note that this attribute has no effect if a gauge is displayed'
             ].join(' ')
         },
         suffix: {
