@@ -27,9 +27,9 @@ var c = require('./constants');
 var brush = require('./axisbrush');
 var lineLayerMaker = require('./lines');
 
-function dimensionExtent(dimension) {
-    var lo = dimension.range ? dimension.range[0] : Lib.aggNums(Math.min, null, dimension.values, dimension._length);
-    var hi = dimension.range ? dimension.range[1] : Lib.aggNums(Math.max, null, dimension.values, dimension._length);
+function dimensionExtent(dim) {
+    var lo = dim.range ? dim.range[0] : Lib.aggNums(Math.min, null, dim.values, dim._length);
+    var hi = dim.range ? dim.range[1] : Lib.aggNums(Math.max, null, dim.values, dim._length);
 
     if(isNaN(lo) || !isFinite(lo)) {
         lo = 0;
@@ -66,11 +66,11 @@ function toText(formatter, texts) {
     return formatter;
 }
 
-function domainScale(height, padding, dimension, tickvals, ticktext) {
-    var extent = dimensionExtent(dimension);
+function domainScale(height, padding, dim, tickvals, ticktext) {
+    var extent = dimensionExtent(dim);
     if(tickvals) {
         return d3.scale.ordinal()
-            .domain(tickvals.map(toText(d3.format(dimension.tickformat), ticktext)))
+            .domain(tickvals.map(toText(d3.format(dim.tickformat), ticktext)))
             .range(tickvals
                 .map(function(d) {
                     var unitVal = (d - extent[0]) / (extent[1] - extent[0]);
@@ -87,19 +87,19 @@ function unitToPaddedPx(height, padding) {
     return d3.scale.linear().range([padding, height - padding]);
 }
 
-function domainToPaddedUnitScale(dimension, padFraction) {
+function domainToPaddedUnitScale(dim, padFraction) {
     return d3.scale.linear()
-        .domain(dimensionExtent(dimension))
+        .domain(dimensionExtent(dim))
         .range([padFraction, 1 - padFraction]);
 }
 
-function ordinalScale(dimension) {
-    if(!dimension.tickvals) return;
+function ordinalScale(dim) {
+    if(!dim.tickvals) return;
 
-    var extent = dimensionExtent(dimension);
+    var extent = dimensionExtent(dim);
     return d3.scale.ordinal()
-        .domain(dimension.tickvals)
-        .range(dimension.tickvals.map(function(d) {
+        .domain(dim.tickvals)
+        .range(dim.tickvals.map(function(d) {
             return (d - extent[0]) / (extent[1] - extent[0]);
         }));
 }
@@ -225,12 +225,12 @@ function viewModel(state, callbacks, model) {
 
     var uniqueKeys = {};
 
-    viewModel.dimensions = dimensions.filter(helpers.isVisible).map(function(dimension, i) {
-        var domainToPaddedUnit = domainToPaddedUnitScale(dimension, unitPad);
-        var foundKey = uniqueKeys[dimension.label];
-        uniqueKeys[dimension.label] = (foundKey || 0) + 1;
-        var key = dimension.label + (foundKey ? '__' + foundKey : '');
-        var specifiedConstraint = dimension.constraintrange;
+    viewModel.dimensions = dimensions.filter(helpers.isVisible).map(function(dim, i) {
+        var domainToPaddedUnit = domainToPaddedUnitScale(dim, unitPad);
+        var foundKey = uniqueKeys[dim.label];
+        uniqueKeys[dim.label] = (foundKey || 0) + 1;
+        var key = dim.label + (foundKey ? '__' + foundKey : '');
+        var specifiedConstraint = dim.constraintrange;
         var filterRangeSpecified = specifiedConstraint && specifiedConstraint.length;
         if(filterRangeSpecified && !Array.isArray(specifiedConstraint[0])) {
             specifiedConstraint = [specifiedConstraint];
@@ -251,21 +251,21 @@ function viewModel(state, callbacks, model) {
             }
         };
 
-        var truncatedValues = dimension.values;
-        if(truncatedValues.length > dimension._length) {
-            truncatedValues = truncatedValues.slice(0, dimension._length);
+        var truncatedValues = dim.values;
+        if(truncatedValues.length > dim._length) {
+            truncatedValues = truncatedValues.slice(0, dim._length);
         }
 
-        var tickvals = dimension.tickvals;
+        var tickvals = dim.tickvals;
         var ticktext;
         function makeTickItem(v, i) { return {val: v, text: ticktext[i]}; }
         function sortTickItem(a, b) { return a.val - b.val; }
         if(Array.isArray(tickvals) && tickvals.length) {
-            ticktext = dimension.ticktext;
+            ticktext = dim.ticktext;
 
             // ensure ticktext and tickvals have same length
             if(!Array.isArray(ticktext) || !ticktext.length) {
-                ticktext = tickvals.map(d3.format(dimension.tickformat));
+                ticktext = tickvals.map(d3.format(dim.tickformat));
             } else if(ticktext.length > tickvals.length) {
                 ticktext = ticktext.slice(0, tickvals.length);
             } else if(tickvals.length > ticktext.length) {
@@ -290,15 +290,15 @@ function viewModel(state, callbacks, model) {
 
         return {
             key: key,
-            label: dimension.label,
-            tickFormat: dimension.tickformat,
+            label: dim.label,
+            tickFormat: dim.tickformat,
             tickvals: tickvals,
             ticktext: ticktext,
-            ordinal: helpers.isOrdinal(dimension),
-            multiselect: dimension.multiselect,
+            ordinal: helpers.isOrdinal(dim),
+            multiselect: dim.multiselect,
             xIndex: i,
             crossfilterDimensionIndex: i,
-            visibleIndex: dimension._index,
+            visibleIndex: dim._index,
             height: height,
             values: truncatedValues,
             paddedUnitValues: truncatedValues.map(domainToPaddedUnit),
@@ -307,8 +307,8 @@ function viewModel(state, callbacks, model) {
             x: xScale(i),
             canvasX: xScale(i) * canvasPixelRatio,
             unitToPaddedPx: _unitToPaddedPx,
-            domainScale: domainScale(height, c.verticalPadding, dimension, tickvals, ticktext),
-            ordinalScale: ordinalScale(dimension),
+            domainScale: domainScale(height, c.verticalPadding, dim, tickvals, ticktext),
+            ordinalScale: ordinalScale(dim),
             parent: viewModel,
             model: model,
             brush: brush.makeBrush(
@@ -331,7 +331,7 @@ function viewModel(state, callbacks, model) {
                         var newRanges = f.map(function(r) {
                             return r.map(invScale).sort(Lib.sorterAsc);
                         }).sort(function(a, b) { return a[0] - b[0]; });
-                        callbacks.filterChanged(p.key, dimension._index, newRanges);
+                        callbacks.filterChanged(p.key, dim._index, newRanges);
                     }
                 }
             )

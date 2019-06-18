@@ -37,15 +37,15 @@ function handleLineDefaults(traceIn, traceOut, defaultColor, layout, coerce) {
     return Infinity;
 }
 
-function dimensionDefaults(dimensionIn, dimensionOut) {
+function dimensionDefaults(dimIn, dimOut) {
     function coerce(attr, dflt) {
-        return Lib.coerce(dimensionIn, dimensionOut, attributes.dimensions, attr, dflt);
+        return Lib.coerce(dimIn, dimOut, attributes.dimensions, attr, dflt);
     }
 
     var values = coerce('values');
     var visible = coerce('visible');
     if(!(values && values.length)) {
-        visible = dimensionOut.visible = false;
+        visible = dimOut.visible = false;
     }
 
     if(visible) {
@@ -58,7 +58,7 @@ function dimensionDefaults(dimensionIn, dimensionOut) {
         coerce('multiselect');
         var constraintRange = coerce('constraintrange');
         if(constraintRange) {
-            dimensionOut.constraintrange = axisBrush.cleanRanges(constraintRange, dimensionOut);
+            dimOut.constraintrange = axisBrush.cleanRanges(constraintRange, dimOut);
         }
     }
 }
